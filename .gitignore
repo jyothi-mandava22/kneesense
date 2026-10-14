@@ -1,0 +1,35 @@
+# --- SECURITY & CREDENTIALS (MUST HAVE) ---
+.env
+.env.*
+*.key
+*.pem
+secrets.json
+*secret*
+*password*
+*credentials*
+
+# --- DATASET & MODEL WEIGHTS (CRITICAL) ---
+ml-service/model/data/
+*.pth
+*.onnx
+
+# --- JAVA / MAVEN ---
+target/
+*.class
+*.jar
+*.war
+.mvn/
+mvnw
+mvnw.cmd
+
+# --- NODE / FRONTEND ---
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+
+# --- IDE & OS ---
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db
