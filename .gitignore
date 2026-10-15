@@ -35,4 +35,6 @@ yarn-debug.log*
 Thumbs.db
 .venv/
 data_resplit/
+output/
 leakage_report.txt
+__pycache__/
