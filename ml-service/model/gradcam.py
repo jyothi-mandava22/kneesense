@@ -1,20 +1,25 @@
 """Grad-CAM explainability (pytorch-grad-cam) -> heatmap overlay as a base64 PNG.
 
-Because the CORAL head shares ONE weight vector across all 4 thresholds, the gradient
-is the same whichever threshold you pick. So the heatmap answers: "which regions push
-the severity score UP?" - one heatmap per image, not one per grade.
+This is the PyTorch / offline version (needs torch + `pip install grad-cam`). The deployed
+service does NOT use it: inference.py draws the heatmap from the ONNX model's "cam" output
+with the same renderer (heatmap_utils.render_heatmap), so no PyTorch is needed there.
+
+Because the CORAL head shares ONE weight vector across all 4 thresholds, the gradient is
+the same whichever threshold you pick. So the heatmap answers: "which regions push the
+severity score UP?" - one heatmap per image, not one per grade.
 
 Methods (pick with method=...):
     "hirescam" - DEFAULT. HiResCAM on EfficientNet-B0 features[5] (14x14 grid): finer
                  than Grad-CAM and highlights what the model actually used.
-    "gradcam"  - fallback. Classic Grad-CAM on the last conv block (coarse 7x7 grid).
+    "gradcam"  - Classic Grad-CAM on the last conv block (coarse 7x7 grid). This is what
+                 the ONNX "cam" output reproduces exactly.
 
 Requirements on the model: it must be the torchvision EfficientNet-B0 built by
 train.build_model (the layer indices below refer to its .features), in eval mode, with
 gradients enabled, and it must output the CORAL logits (the severity score is the
 differentiable target).
 
-Test (needs `pip install grad-cam`):
+Test:
     python gradcam.py --weights best_model.pth --image some_xray.png --out heatmap.png
 """
 from __future__ import annotations
@@ -30,8 +35,10 @@ from torch import nn
 
 try:
     from .dataset import apply_clahe, build_transforms, read_gray
+    from .heatmap_utils import render_heatmap
 except ImportError:  # running as a plain script
     from dataset import apply_clahe, build_transforms, read_gray
+    from heatmap_utils import render_heatmap
 
 
 class SeverityTarget:
@@ -39,24 +46,6 @@ class SeverityTarget:
 
     def __call__(self, model_output: torch.Tensor) -> torch.Tensor:
         return model_output.sum()
-
-
-def _to_rgb_float(image: np.ndarray, size: tuple[int, int]) -> np.ndarray:
-    """Any uint8/float image -> float32 RGB in [0, 1], resized to size = (width, height)."""
-    if image.ndim == 2:
-        image = np.stack([image] * 3, axis=-1)
-    if image.dtype != np.uint8:
-        image = np.clip(image, 0, 1) * 255
-    image = cv2.resize(image.astype(np.uint8), size, interpolation=cv2.INTER_AREA)
-    return image.astype(np.float32) / 255.0
-
-
-def _png_base64(rgb_uint8: np.ndarray) -> str:
-    """RGB uint8 image -> PNG bytes -> base64 text."""
-    ok, buf = cv2.imencode(".png", cv2.cvtColor(rgb_uint8, cv2.COLOR_RGB2BGR))
-    if not ok:
-        raise RuntimeError("PNG encoding failed")
-    return base64.b64encode(buf.tobytes()).decode("ascii")
 
 
 def preprocess_image(path: str | Path, image_size: int = 224) -> tuple[torch.Tensor, np.ndarray]:
@@ -69,15 +58,6 @@ def preprocess_image(path: str | Path, image_size: int = 224) -> tuple[torch.Ten
     enhanced = np.stack([apply_clahe(gray)] * 3, axis=-1)
     tensor = build_transforms(image_size, augment=False)(image=enhanced)["image"].unsqueeze(0)
     return tensor, original
-
-
-def _overlay(base: np.ndarray, cam: np.ndarray, min_heat: float) -> np.ndarray:
-    """Blend a JET heatmap onto the X-ray ONLY where cam > min_heat (cam in [0, 1]).
-    Everywhere else the plain grayscale X-ray is left untouched (no blue tint)."""
-    heat = cv2.cvtColor(cv2.applyColorMap(np.uint8(255 * cam), cv2.COLORMAP_JET), cv2.COLOR_BGR2RGB)
-    heat = heat.astype(np.float32) / 255.0
-    alpha = np.clip((cam - min_heat) / (1.0 - min_heat), 0.0, 1.0)[..., None] * 0.65
-    return np.uint8(np.clip(base * (1 - alpha) + heat * alpha, 0, 1) * 255)
 
 
 def generate_heatmap(model: nn.Module, image_tensor: torch.Tensor, original_image: np.ndarray,
@@ -114,11 +94,7 @@ def generate_heatmap(model: nn.Module, image_tensor: torch.Tensor, original_imag
 
     cam = cam_cls(model=model, target_layers=layers)
     cam_map = cam(input_tensor=x, targets=[SeverityTarget()])[0]  # (H, W) in [0, 1]
-
-    size = (output_size, output_size)
-    cam_big = np.clip(cv2.resize(cam_map, size, interpolation=cv2.INTER_CUBIC), 0.0, 1.0)
-    base = _to_rgb_float(original_image, size)
-    return _png_base64(_overlay(base, cam_big, min_heat))
+    return render_heatmap(original_image, cam_map, output_size, min_heat)
 
 
 # --------------------------------------------------------------------------- CLI test
