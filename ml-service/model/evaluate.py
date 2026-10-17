@@ -22,6 +22,9 @@ except ImportError:  # running as a plain script
     from dataset import CLASS_NAMES, NUM_CLASSES, load_dataset
 
 
+HERE = Path(__file__).resolve().parent  # the ml-service/model folder: defaults live here, not in the current directory
+
+
 # --------------------------------------------------------------------------- predictions
 def _grades_and_confidence(logits: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """CORAL logits (N, 4) -> predicted grades (N,) and probability of that grade (N,)."""
@@ -126,7 +129,7 @@ def build_report(y_true: np.ndarray, y_pred: np.ndarray, confidence: np.ndarray,
 
 # --------------------------------------------------------------------------- public API
 def run_evaluation(model_path: str | Path, data_dir: str | Path,
-                   output_dir: str | Path = "output") -> dict[str, float]:
+                   output_dir: str | Path = HERE / "output") -> dict[str, float]:
     """Evaluate a .onnx (production model) or .pth model on the test split, print the
     report and save it to <output_dir>/evaluation_report.txt (+ metrics.json).
 
@@ -156,8 +159,8 @@ def run_evaluation(model_path: str | Path, data_dir: str | Path,
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(description="Evaluate the trained model on the test split")
-    ap.add_argument("--model", default="output/best_model.onnx", help=".onnx or .pth file")
-    ap.add_argument("--data_dir", default="data")
-    ap.add_argument("--output_dir", default="output")
+    ap.add_argument("--model", default=str(HERE / "output" / "best_model.onnx"), help=".onnx or .pth file")
+    ap.add_argument("--data_dir", default=str(HERE / "data"))
+    ap.add_argument("--output_dir", default=str(HERE / "output"))
     a = ap.parse_args()
     run_evaluation(a.model, a.data_dir, a.output_dir)

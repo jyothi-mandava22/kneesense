@@ -24,6 +24,7 @@ except ImportError:  # running as a plain script
     from dataset import IMAGE_EXTS, NUM_CLASSES, find_split_dir, read_gray
 
 SPLITS = ("train", "val", "test")
+HERE = Path(__file__).resolve().parent  # the ml-service/model folder: defaults live here, not in the current directory
 
 
 # --------------------------------------------------------------------------- hashing
@@ -194,11 +195,11 @@ def resplit_by_patient(data_dir: str | Path, output_dir: str | Path,
 # --------------------------------------------------------------------------- CLI
 def _main() -> None:
     ap = argparse.ArgumentParser(description="Cross-split leakage check")
-    ap.add_argument("--data_dir", default="data")
+    ap.add_argument("--data_dir", default=str(HERE / "data"))
     ap.add_argument("--near_dist", type=int, default=4, help="Hamming distance for 'near' duplicates")
     ap.add_argument("--resplit", action="store_true", help="re-split by patient if leakage is found")
     ap.add_argument("--output_dir", default=None, help="default: <data_dir>_resplit")
-    ap.add_argument("--report", default="leakage_report.txt")
+    ap.add_argument("--report", default=str(HERE / "output" / "leakage_report.txt"))
     args = ap.parse_args()
 
     items = _collect(args.data_dir)
@@ -224,6 +225,7 @@ def _main() -> None:
         for i, j, d in plist:
             lines.append(f"{tag} d={d}: [{items[i][1]}] {items[i][0]}  <->  [{items[j][1]}] {items[j][0]}")
     lines += [f"PATIENT {k} in splits {v}" for k, v in list(shared.items())[:200]]
+    Path(args.report).parent.mkdir(parents=True, exist_ok=True)
     Path(args.report).write_text("\n".join(lines) or "No cross-split duplicates found.", encoding="utf-8")
     print(f"Details saved to {args.report}")
 

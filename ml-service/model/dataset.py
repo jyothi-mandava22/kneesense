@@ -25,6 +25,7 @@ CLASS_NAMES = ["Normal", "Doubtful", "Mild", "Moderate", "Severe"]  # KL 0..4
 IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".bmp"}
 IMAGENET_MEAN = (0.485, 0.456, 0.406)
 IMAGENET_STD = (0.229, 0.224, 0.225)
+HERE = Path(__file__).resolve().parent  # the ml-service/model folder: defaults live here, not in the current directory
 SPLIT_ALIASES = {"train": {"train"}, "val": {"val", "valid", "validation"}, "test": {"test"}}
 
 
@@ -174,13 +175,15 @@ def _self_test(data_dir: str, preview: bool) -> None:
         path, _ = load_dataset(data_dir, "train").samples[0]
         raw = read_gray(path)
         out = np.hstack([cv2.resize(raw, (224, 224)), cv2.resize(apply_clahe(raw), (224, 224))])
-        cv2.imwrite("clahe_preview.png", out)
-        print("saved clahe_preview.png (left = original, right = CLAHE)")
+        preview = HERE / "output" / "clahe_preview.png"
+        preview.parent.mkdir(parents=True, exist_ok=True)
+        cv2.imwrite(str(preview), out)
+        print(f"saved {preview} (left = original, right = CLAHE)")
 
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(description="Self-test for dataset.py")
-    ap.add_argument("--data_dir", default="data", help="folder where the dataset was unzipped")
+    ap.add_argument("--data_dir", default=str(HERE / "data"), help="folder where the dataset was unzipped")
     ap.add_argument("--preview", action="store_true", help="save clahe_preview.png")
     args = ap.parse_args()
     _self_test(args.data_dir, args.preview)

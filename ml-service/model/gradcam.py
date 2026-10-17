@@ -41,6 +41,9 @@ except ImportError:  # running as a plain script
     from heatmap_utils import render_heatmap
 
 
+HERE = Path(__file__).resolve().parent  # the ml-service/model folder: defaults live here, not in the current directory
+
+
 class SeverityTarget:
     """Grad-CAM target: the sum of the CORAL logits (= the severity score)."""
 
@@ -102,7 +105,7 @@ def _main() -> None:
     ap = argparse.ArgumentParser(description="Generate a Grad-CAM heatmap PNG for one X-ray")
     ap.add_argument("--weights", required=True, help="path to best_model.pth")
     ap.add_argument("--image", required=True, help="path to an X-ray image")
-    ap.add_argument("--out", default="heatmap.png")
+    ap.add_argument("--out", default=str(HERE / "output" / "heatmap.png"))
     ap.add_argument("--image_size", type=int, default=224)
     ap.add_argument("--method", default="hirescam", choices=["hirescam", "gradcam"])
     ap.add_argument("--min_heat", type=float, default=0.25)
@@ -124,6 +127,7 @@ def _main() -> None:
     confidence = float(logits_to_class_probs(logits)[0, grade])
 
     b64 = generate_heatmap(model, tensor, original, args.method, min_heat=args.min_heat)
+    Path(args.out).parent.mkdir(parents=True, exist_ok=True)
     Path(args.out).write_bytes(base64.b64decode(b64))
     print(f"predicted grade: {grade} | confidence: {confidence:.3f}")
     print(f"base64 length: {len(b64)} characters | first 30: {b64[:30]}")

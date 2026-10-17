@@ -31,6 +31,9 @@ except ImportError:  # running as a plain script
     from train import build_model
 
 
+HERE = Path(__file__).resolve().parent  # the ml-service/model folder: defaults live here, not in the current directory
+
+
 class OnnxWrapper(nn.Module):
     """Wraps the trained model so one forward pass returns (logits, cam)."""
 
@@ -128,8 +131,8 @@ def verify_export(weights_path: str | Path, onnx_path: str | Path,
 
 def _main() -> None:
     ap = argparse.ArgumentParser(description="Export best_model.pth to ONNX and verify it")
-    ap.add_argument("--weights", default="output/best_model.pth")
-    ap.add_argument("--onnx", default="output/best_model.onnx")
+    ap.add_argument("--weights", default=str(HERE / "output" / "best_model.pth"))
+    ap.add_argument("--onnx", default=str(HERE / "output" / "best_model.onnx"))
     ap.add_argument("--data_dir", help="dataset root; verifies one test image per grade 0-4")
     ap.add_argument("--image", nargs="+", help="verify these image files instead")
     ap.add_argument("--verify_only", action="store_true", help="skip export, only verify")

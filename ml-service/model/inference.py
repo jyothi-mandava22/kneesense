@@ -28,6 +28,7 @@ except ImportError:  # running as a plain script
     from heatmap_utils import png_base64, render_heatmap  # noqa: F401
     from input_guard import check_xray
 
+HERE = Path(__file__).resolve().parent  # the ml-service/model folder: defaults live here, not in the current directory
 IMAGE_SIZE = 224
 MODEL_PATH_ENV = "KNEESENSE_MODEL_PATH"
 _MEAN = np.array([0.485, 0.456, 0.406], dtype=np.float32)
@@ -199,7 +200,7 @@ def measure_latency(image_paths, session=None, warmup: int = 3) -> dict[str, Any
             "onnx_ms": _summary(onnx_ms), "predict_ms": _summary(total_ms)}
 
 
-def log_latency(stats: dict[str, Any], out_path: str | Path = "output/latency.txt") -> str:
+def log_latency(stats: dict[str, Any], out_path: str | Path = HERE / "output" / "latency.txt") -> str:
     """Write the latency numbers to a short text file (copy it into the README). Returns the text."""
     try:
         import onnxruntime as ort
@@ -238,13 +239,13 @@ def _main() -> None:
     ap = argparse.ArgumentParser(description="Self-test and latency measurement for inference.py")
     ap.add_argument("--onnx", default=None, help="path to best_model.onnx (or set KNEESENSE_MODEL_PATH)")
     ap.add_argument("--image", help="one image to run through predict()")
-    ap.add_argument("--out", default="heatmap_from_onnx.png")
+    ap.add_argument("--out", default=str(HERE / "output" / "heatmap_from_onnx.png"))
     ap.add_argument("--check_preproc", action="store_true",
                     help="compare NumPy preprocessing with dataset.py (needs torch)")
     ap.add_argument("--latency", type=int, default=0, metavar="N",
                     help="time predict() on N random test images (needs --data_dir)")
     ap.add_argument("--data_dir", help="dataset root (for --latency)")
-    ap.add_argument("--latency_out", default="output/latency.txt")
+    ap.add_argument("--latency_out", default=str(HERE / "output" / "latency.txt"))
     args = ap.parse_args()
     if not args.image and not args.latency:
         raise SystemExit("Give --image for a single prediction and/or --latency N --data_dir DIR")
@@ -281,6 +282,7 @@ def _main() -> None:
         except InvalidInputImageError as e:
             print("REJECTED:", e.to_dict())
             return
+        Path(args.out).parent.mkdir(parents=True, exist_ok=True)
         Path(args.out).write_bytes(base64.b64decode(result["heatmap_base64"]))
         print("keys:", sorted(result))
         print(f"kl_grade: {result['kl_grade']} ({type(result['kl_grade']).__name__}) | "

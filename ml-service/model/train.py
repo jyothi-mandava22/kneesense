@@ -29,6 +29,9 @@ except ImportError:  # running as a plain script
     from dataset import NUM_CLASSES, get_dataloaders
 
 
+HERE = Path(__file__).resolve().parent  # the ml-service/model folder: defaults live here, not in the current directory
+
+
 # --------------------------------------------------------------------------- model
 class CoralHead(nn.Module):
     """One shared weight vector + (num_classes - 1) separate biases -> K-1 logits."""
@@ -156,8 +159,8 @@ def _set_seed(seed: int) -> None:
 
 def main(argv: list[str] | None = None) -> None:
     ap = argparse.ArgumentParser(description="Train KneeSense CNN (EfficientNet-B0 + CORAL)")
-    ap.add_argument("--data_dir", default="data")
-    ap.add_argument("--output_dir", default="output", help="best_model.pth + training_log.json go here")
+    ap.add_argument("--data_dir", default=str(HERE / "data"))
+    ap.add_argument("--output_dir", default=str(HERE / "output"), help="best_model.pth + training_log.json go here")
     ap.add_argument("--epochs", type=int, default=30)
     ap.add_argument("--batch_size", type=int, default=32)
     ap.add_argument("--lr", type=float, default=3e-4)
