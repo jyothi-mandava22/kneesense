@@ -13,6 +13,8 @@ from __future__ import annotations
 
 import argparse
 import os
+import platform
+import time
 from pathlib import Path
 from typing import Any
 
@@ -122,12 +124,14 @@ def _preprocess(gray: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
 
 
 # --------------------------------------------------------------------------- public API
-def predict(image: Any, session=None) -> dict[str, Any]:
+def predict(image: Any, session=None, timings: dict[str, float] | None = None) -> dict[str, Any]:
     """Grade one knee X-ray.
 
     Args:
         image: file path, raw bytes (e.g. an upload) or a numpy array.
         session: optional onnxruntime session; defaults to the one from load_model().
+        timings: optional dict; if given, timings["onnx_ms"] is set to the time spent in the
+            ONNX forward pass (milliseconds). The returned dict is not affected.
 
     Returns:
         EXACTLY these keys (locked API contract):
@@ -145,45 +149,144 @@ def predict(image: Any, session=None) -> dict[str, Any]:
         raise InvalidInputImageError(reason)
 
     x, original = _preprocess(_to_gray(arr))
+    t0 = time.perf_counter()
     logits, cam = sess.run(["logits", "cam"], {"image": x})
+    if timings is not None:
+        timings["onnx_ms"] = (time.perf_counter() - t0) * 1000.0
     grade, confidence = grade_and_confidence(logits)
     return {"kl_grade": grade, "confidence": confidence,
             "heatmap_base64": render_heatmap(original, cam[0])}
 
 
+# --------------------------------------------------------------------------- latency
+def _summary(values: list[float]) -> dict[str, float]:
+    return {"avg": float(np.mean(values)), "median": float(np.median(values)),
+            "min": float(np.min(values)), "max": float(np.max(values))}
+
+
+def measure_latency(image_paths, session=None, warmup: int = 3) -> dict[str, Any]:
+    """Time predict() on a list of images (CPU).
+
+    Does `warmup` untimed runs first (the first onnxruntime call is slower). For every image
+    records (a) the ONNX forward pass alone and (b) the whole predict() call (decode + guard +
+    preprocessing + ONNX + heatmap). Images rejected by the guard are counted, not timed.
+    """
+    sess = session or _session or load_model()
+    paths = list(image_paths)
+    if not paths:
+        raise ValueError("No images given")
+    for _ in range(warmup):
+        try:
+            predict(paths[0], sess)
+        except InvalidInputImageError:
+            break
+    onnx_ms: list[float] = []
+    total_ms: list[float] = []
+    rejected = 0
+    for p in paths:
+        timings: dict[str, float] = {}
+        t0 = time.perf_counter()
+        try:
+            predict(p, sess, timings)
+        except InvalidInputImageError:
+            rejected += 1
+            continue
+        total_ms.append((time.perf_counter() - t0) * 1000.0)
+        onnx_ms.append(timings["onnx_ms"])
+    if not total_ms:
+        raise RuntimeError("All images were rejected by input_guard - nothing to time")
+    return {"n_images": len(total_ms), "rejected": rejected, "warmup_runs": warmup,
+            "onnx_ms": _summary(onnx_ms), "predict_ms": _summary(total_ms)}
+
+
+def log_latency(stats: dict[str, Any], out_path: str | Path = "output/latency.txt") -> str:
+    """Write the latency numbers to a short text file (copy it into the README). Returns the text."""
+    try:
+        import onnxruntime as ort
+        ort_version = ort.__version__
+    except Exception:
+        ort_version = "n/a"
+    o, t = stats["onnx_ms"], stats["predict_ms"]
+    text = "\n".join([
+        "KneeSense inference latency (CPU only, onnxruntime)",
+        f"Measured: {time.strftime('%Y-%m-%d')} | {stats['n_images']} test images "
+        f"(after {stats['warmup_runs']} untimed warm-up runs; {stats['rejected']} rejected by the guard)",
+        f"Machine: {platform.system()} {platform.machine()}, {os.cpu_count()} logical CPUs, "
+        f"Python {platform.python_version()}, onnxruntime {ort_version}",
+        "",
+        f"ONNX forward pass only : avg {o['avg']:.1f} ms | median {o['median']:.1f} | "
+        f"min {o['min']:.1f} | max {o['max']:.1f}",
+        f"Full predict() call    : avg {t['avg']:.1f} ms | median {t['median']:.1f} | "
+        f"min {t['min']:.1f} | max {t['max']:.1f}",
+        "  (full call = image decoding + input guard + preprocessing + ONNX + heatmap PNG)",
+        "",
+        "README line:",
+        f"Average CPU latency: {t['avg']:.0f} ms per image end-to-end "
+        f"(max {t['max']:.0f} ms); model forward pass alone {o['avg']:.0f} ms. "
+        f"Measured on {stats['n_images']} test images, onnxruntime on CPU.",
+    ])
+    out = Path(out_path)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(text + "\n", encoding="utf-8")
+    return text
+
+
 # --------------------------------------------------------------------------- CLI self-test
 def _main() -> None:
     import base64
-    import time
 
-    ap = argparse.ArgumentParser(description="Self-test for inference.py")
+    ap = argparse.ArgumentParser(description="Self-test and latency measurement for inference.py")
     ap.add_argument("--onnx", default=None, help="path to best_model.onnx (or set KNEESENSE_MODEL_PATH)")
-    ap.add_argument("--image", required=True)
+    ap.add_argument("--image", help="one image to run through predict()")
     ap.add_argument("--out", default="heatmap_from_onnx.png")
     ap.add_argument("--check_preproc", action="store_true",
                     help="compare NumPy preprocessing with dataset.py (needs torch)")
+    ap.add_argument("--latency", type=int, default=0, metavar="N",
+                    help="time predict() on N random test images (needs --data_dir)")
+    ap.add_argument("--data_dir", help="dataset root (for --latency)")
+    ap.add_argument("--latency_out", default="output/latency.txt")
     args = ap.parse_args()
+    if not args.image and not args.latency:
+        raise SystemExit("Give --image for a single prediction and/or --latency N --data_dir DIR")
 
     load_model(args.onnx)
-    if args.check_preproc:
-        from gradcam import preprocess_image  # torch-based training pipeline
-        ref, _ = preprocess_image(args.image)
-        mine, _ = _preprocess(_to_gray(_decode(args.image)))
-        diff = float(np.abs(ref.numpy() - mine).max())
-        print(f"preprocessing max abs diff vs dataset.py: {diff:.2e} ({'OK' if diff < 1e-3 else 'MISMATCH'})")
-    try:
-        t0 = time.time()
-        result = predict(args.image)
-        ms = (time.time() - t0) * 1000
-    except InvalidInputImageError as e:
-        print("REJECTED:", e.to_dict())
-        return
-    Path(args.out).write_bytes(base64.b64decode(result["heatmap_base64"]))
-    print("keys:", sorted(result))
-    print(f"kl_grade: {result['kl_grade']} ({type(result['kl_grade']).__name__}) | "
-          f"confidence: {result['confidence']:.4f} ({type(result['confidence']).__name__}) | "
-          f"heatmap_base64: {len(result['heatmap_base64'])} chars | {ms:.0f} ms")
-    print(f"saved {args.out}")
+
+    if args.latency:
+        if not args.data_dir:
+            raise SystemExit("--latency needs --data_dir")
+        import random
+
+        try:
+            from .dataset import find_split_dir
+        except ImportError:
+            from dataset import find_split_dir
+        files = sorted(f for f in find_split_dir(args.data_dir, "test").rglob("*.png"))
+        random.Random(0).shuffle(files)
+        print(f"Timing predict() on {min(args.latency, len(files))} test images ...")
+        stats = measure_latency(files[:args.latency])
+        print(log_latency(stats, args.latency_out))
+        print(f"\nsaved {args.latency_out}")
+
+    if args.image:
+        if args.check_preproc:
+            from gradcam import preprocess_image  # torch-based training pipeline
+            ref, _ = preprocess_image(args.image)
+            mine, _ = _preprocess(_to_gray(_decode(args.image)))
+            diff = float(np.abs(ref.numpy() - mine).max())
+            print(f"preprocessing max abs diff vs dataset.py: {diff:.2e} ({'OK' if diff < 1e-3 else 'MISMATCH'})")
+        try:
+            t0 = time.time()
+            result = predict(args.image)
+            ms = (time.time() - t0) * 1000
+        except InvalidInputImageError as e:
+            print("REJECTED:", e.to_dict())
+            return
+        Path(args.out).write_bytes(base64.b64decode(result["heatmap_base64"]))
+        print("keys:", sorted(result))
+        print(f"kl_grade: {result['kl_grade']} ({type(result['kl_grade']).__name__}) | "
+              f"confidence: {result['confidence']:.4f} ({type(result['confidence']).__name__}) | "
+              f"heatmap_base64: {len(result['heatmap_base64'])} chars | {ms:.0f} ms")
+        print(f"saved {args.out}")
 
 
 if __name__ == "__main__":
