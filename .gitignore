@@ -33,3 +33,8 @@ yarn-debug.log*
 .vscode/
 .DS_Store
 Thumbs.db
+.venv/
+data_resplit/
+output/
+leakage_report.txt
+__pycache__/

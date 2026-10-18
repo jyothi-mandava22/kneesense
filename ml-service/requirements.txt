@@ -1,0 +1,22 @@
+# Tested with Python 3.14.5 (the brief suggested 3.11 - verify these pins install on the service's Python before deploying)
+# KneeSense ml-service (AI/DL part) - exact pinned versions, no ranges.
+# These are the versions the code was exported, tested and timed with on the development
+# laptop. (The model itself was trained on Kaggle's preinstalled PyTorch.) Do not loosen them.
+
+# ---- Needed by the SERVICE: inference.py, input_guard.py, heatmap_utils.py (no PyTorch needed) ----
+numpy==2.5.4
+opencv-python-headless==5.0.0.93
+onnxruntime==1.31.0
+
+# ---- Needed only to TRAIN / EXPORT / EVALUATE (not needed on the server) ----
+torch==2.14.1
+torchvision==0.29.1
+albumentations==2.0.8
+scikit-learn==1.9.1
+onnx==1.23.2
+ImageHash==4.3.2
+pillow==12.3.0
+grad-cam==1.5.7        # offline heatmap tool (gradcam.py); only run on Kaggle
+
+# ---- Dev script ----
+kaggle==2.2.4          # scripts/download_dataset.sh
