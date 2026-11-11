@@ -1,0 +1,4 @@
+g4-1 | KL grade 4 shows large bony spurs, marked joint space loss, severe bone hardening, and possible deformity, consistent with severe osteoarthritis.
+g4-2 | Non-surgical measures such as exercise within tolerance, weight management, pain control, and mobility aids continue to support comfort and function.
+g4-3 | Specialist orthopaedic referral is recommended to discuss surgical options such as knee replacement, particularly when pain and disability remain significant despite non-surgical treatment.
+g4-4 | Decisions about surgery depend on symptoms, overall health, and patient preferences, not on the X-ray grade alone.

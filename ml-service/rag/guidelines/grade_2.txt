@@ -1,0 +1,4 @@
+g2-1 | KL grade 2 shows definite bony spurs with possible joint space narrowing, consistent with mild osteoarthritis.
+g2-2 | First-line management combines education, structured exercise (strengthening plus aerobic or aquatic activity), and weight reduction where relevant, regardless of pain level.
+g2-3 | For pain, topical anti-inflammatory creams are often suggested first, with short-term oral pain relievers used at the lowest effective dose after weighing individual risks.
+g2-4 | Walking aids, supportive footwear, or physiotherapy referral can help if pain limits daily activity.

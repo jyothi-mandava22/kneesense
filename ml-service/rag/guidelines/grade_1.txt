@@ -1,0 +1,3 @@
+g1-1 | KL grade 1 describes doubtful joint space narrowing with possible tiny bony spurs; the finding is uncertain and does not by itself confirm osteoarthritis.
+g1-2 | Core guidance at this stage is self-management: education about the condition, regular low-impact exercise, quadriceps strengthening, and weight loss when overweight.
+g1-3 | Symptoms should be monitored, and repeat assessment or imaging may be considered if pain, stiffness, or function worsens over time.

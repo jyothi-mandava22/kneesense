@@ -1,0 +1,3 @@
+g0-1 | A KL grade 0 knee shows no radiographic signs of osteoarthritis; joint space and bone outlines appear normal.
+g0-2 | If knee pain is present despite a normal X-ray, other causes such as soft-tissue injury, tendon or ligament problems, or referred pain should be considered, and clinical assessment guides next steps.
+g0-3 | General joint-health measures are encouraged: regular physical activity, strengthening of the thigh muscles, maintaining a healthy weight, and avoiding repeated knee overload.
