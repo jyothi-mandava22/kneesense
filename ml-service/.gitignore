@@ -1,0 +1,8 @@
+.env
+.venv/
+rag/bm25_index.pkl
+__pycache__/
+*.onnx
+*.pth
+out.json
+!.env.example

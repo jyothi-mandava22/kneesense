@@ -1,0 +1,4 @@
+g3-1 | KL grade 3 shows multiple moderate bony spurs, definite joint space narrowing, and some bone hardening, consistent with moderate osteoarthritis.
+g3-2 | Exercise, weight management, and education remain the foundation, with physiotherapy support to maintain strength and mobility.
+g3-3 | When pain persists despite these measures, clinicians may consider oral anti-inflammatory medicines, with attention to stomach, kidney, and heart risks, or a short-term corticosteroid joint injection for temporary relief.
+g3-4 | Referral to an orthopaedic or musculoskeletal specialist is reasonable when symptoms substantially affect sleep, work, or daily function.

@@ -1,0 +1,8 @@
+.env
+.venv/
+__pycache__/
+model/data/
+model/outputs/
+*.onnx
+*.pth
+tests/

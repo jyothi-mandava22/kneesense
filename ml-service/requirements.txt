@@ -1,22 +1,62 @@
-# Tested with Python 3.14.5 (the brief suggested 3.11 - verify these pins install on the service's Python before deploying)
-# KneeSense ml-service (AI/DL part) - exact pinned versions, no ranges.
-# These are the versions the code was exported, tested and timed with on the development
-# laptop. (The model itself was trained on Kaggle's preinstalled PyTorch.) Do not loosen them.
+# ml-service runtime dependencies. Resolved for python:3.11-slim (the Docker image).
+# Training/export-only packages live in model/requirements-train.txt, not here.
 
-# ---- Needed by the SERVICE: inference.py, input_guard.py, heatmap_utils.py (no PyTorch needed) ----
-numpy==2.5.4
-opencv-python-headless==5.0.0.93
+annotated-doc==0.0.7
+annotated-types==0.8.0
+anyio==4.16.0
+certifi==2026.10.23
+cffi==2.1.1
+charset-normalizer==3.5.2
+click==8.5.1
+cryptography==50.0.2
+distro==1.9.0
+fastapi==0.143.0
+filelock==4.2.12
+flatbuffers==25.12.19
+fsspec==2026.9.0
+google-ai-generativelanguage==0.6.15
+google-api-core==2.33.0
+google-api-python-client==2.202.0
+google-auth==2.62.2
+google-auth-httplib2==0.4.4
+google-generativeai==0.8.6
+googleapis-common-protos==1.75.0
+groq==1.7.0
+grpcio==1.85.3
+grpcio-status==1.71.2
+h11==0.16.0
+hf-xet==1.8.0
+httpcore==1.0.9
+httpcore2==2.16.2
+httplib2==0.32.1
+httpx==0.28.1
+httpx2==2.16.2
+huggingface_hub==2.4.0
+idna==3.20
+numpy==2.4.6
 onnxruntime==1.31.0
-
-# ---- Needed only to TRAIN / EXPORT / EVALUATE (not needed on the server) ----
-torch==2.14.1
-torchvision==0.29.1
-albumentations==2.0.8
-scikit-learn==1.9.1
-onnx==1.23.2
-ImageHash==4.3.2
-pillow==12.3.0
-grad-cam==1.5.7        # offline heatmap tool (gradcam.py); only run on Kaggle
-
-# ---- Dev script ----
-kaggle==2.2.4          # scripts/download_dataset.sh
+opencv-python-headless==5.0.0.93
+opentelemetry-api==1.45.2
+packaging==26.3
+proto-plus==1.28.2
+protobuf==5.29.6
+pyasn1==0.6.5
+pyasn1_modules==0.4.2
+pycparser==3.12
+pydantic==2.14.3
+pydantic_core==2.50.4
+pyparsing==3.3.3
+python-dotenv==1.2.4
+python-multipart==0.0.32
+PyYAML==6.0.3
+rank-bm25==0.2.2
+requests==2.34.2
+sniffio==1.3.1
+starlette==1.10.0
+tqdm==4.70.1
+truststore==0.10.5
+typing-inspection==0.4.5
+typing_extensions==4.16.0
+uritemplate==4.2.0
+urllib3==2.8.0
+uvicorn==0.54.0
