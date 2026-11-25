@@ -1,0 +1,1269 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="KneeSense — an academic project exploring AI-assisted knee osteoarthritis assessment.">
+<title>KneeSense | Patient and Doctor Portal</title>
+<style>
+:root{
+  --bg:#f5f1fa;
+  --surface:#ffffff;
+  --surface-2:#ede6f5;
+  --ink:#2d1b3d;
+  --ink-soft:#6b5a7a;
+  --line:#e0d5ed;
+  --accent:#4a2a66;
+  --accent-2:#e8e0f5;
+  --mint:#c8f7df;
+  --mint-strong:#38c996;
+  --hero-bg:#efe7f5;
+  --shadow:0 18px 50px rgba(45,27,61,.10);
+  --shadow-soft:0 10px 30px rgba(45,27,61,.06);
+  --radius:22px;
+  --sans:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --serif:Georgia,"Times New Roman",serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.55}
+button,input{font:inherit}
+button{cursor:pointer}
+a{color:inherit;text-decoration:none}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid rgba(56,201,150,.55);outline-offset:3px}
+.app-shell{min-height:100vh}
+.container{width:min(1180px,calc(100% - 48px));margin:0 auto}
+/* The landing page uses more of the available desktop width to avoid a cramped central composition. */
+.landing.container,.landing-bottom.container{width:min(1360px,calc(100% - 64px))}
+.brand-wordmark{display:inline-flex;flex-direction:column;gap:1px;line-height:1;text-decoration:none}
+.brand-wordmark strong{font-size:25px;letter-spacing:-.065em;font-weight:850;color:var(--ink)}
+.brand-wordmark small{font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-soft);font-weight:750;margin-top:5px}
+.btn{border:0;border-radius:999px;padding:12px 19px;background:var(--accent);color:white;font-size:13px;font-weight:750;display:inline-flex;align-items:center;justify-content:center;gap:9px;transition:transform .18s,box-shadow .18s,background .18s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 10px 22px rgba(74,42,102,.18)}
+.btn.mint{background:var(--mint);color:var(--ink)}
+.btn.outline{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.soft{background:var(--accent-2);color:var(--accent)}
+.btn.small{padding:9px 14px;font-size:12px}
+.eyebrow{display:inline-flex;align-items:center;gap:9px;text-transform:uppercase;letter-spacing:.16em;color:var(--accent);font-size:10px;font-weight:850}
+.eyebrow:before{content:"";width:22px;height:2px;background:var(--mint-strong)}
+.muted{color:var(--ink-soft)}
+
+/* Landing: identity on the left, two portal entry cards on the right. */
+/* Use the full viewport on the landing page and balance the intro + portal panel vertically. */
+.page#landingPage.active{display:flex;flex-direction:column;min-height:100vh;min-height:100svh}
+.landing{flex:1 0 auto;display:flex;align-items:center;padding:clamp(28px,4.5vh,48px) 0}
+.landing-grid{display:grid;grid-template-columns:1.02fr .98fr;gap:50px;align-items:center;width:100%;min-height:0}
+.intro-copy{padding:8px 0 10px}
+.intro-kicker{display:flex;align-items:center;gap:10px;color:var(--accent);font-size:11px;font-weight:800;letter-spacing:.15em;text-transform:uppercase}
+.intro-kicker span{display:inline-block;width:8px;height:8px;background:var(--mint-strong);border-radius:50%;box-shadow:0 0 0 5px rgba(56,201,150,.15)}
+.intro-brand{font-size:clamp(48px,6vw,78px);line-height:.98;letter-spacing:-.075em;margin:23px 0 22px;font-weight:850}
+.intro-brand em{font-style:normal;color:var(--accent)}
+.intro-headline{font-family:var(--serif);font-size:clamp(31px,3.3vw,45px);line-height:1.12;letter-spacing:-.035em;max-width:630px;margin:0 0 17px;font-weight:500}
+.intro-description{font-size:15px;line-height:1.85;color:var(--ink-soft);max-width:565px;margin:0}
+.intro-points{display:flex;gap:10px;flex-wrap:wrap;margin-top:25px}
+.pill{padding:8px 12px;background:rgba(255,255,255,.75);border:1px solid var(--line);border-radius:999px;font-size:11px;color:var(--ink-soft);font-weight:700}
+.pill b{color:var(--accent);margin-right:5px}
+.portal-panel{background:rgba(255,255,255,.78);border:1px solid var(--line);border-radius:28px;padding:28px;box-shadow:var(--shadow)}
+.portal-heading{margin-bottom:19px}
+.portal-heading .eyebrow{margin-bottom:9px}
+.portal-heading .eyebrow:before{display:none}
+.portal-heading h2{font-size:25px;letter-spacing:-.045em;margin:0 0 6px}
+.portal-heading p{font-size:12px;color:var(--ink-soft);margin:0}
+.portal-card{width:100%;min-height:88px;text-align:left;color:var(--ink);font:inherit;border:1px solid var(--line);border-radius:18px;background:white;padding:19px;display:flex;align-items:center;gap:15px;transition:transform .18s,border-color .18s,box-shadow .18s;margin-top:12px}
+.portal-card:hover{transform:translateY(-2px);border-color:#b9e9d3;box-shadow:var(--shadow-soft)}
+.portal-icon{width:48px;height:48px;flex:0 0 48px;border-radius:15px;background:var(--accent-2);display:grid;place-items:center;color:var(--accent)}
+.portal-card.doctor .portal-icon{background:var(--mint);color:#236d55}
+.portal-copy{min-width:0;flex:1}
+.portal-copy strong{display:block;font-size:15px;letter-spacing:-.02em}
+.portal-copy small{display:block;color:var(--ink-soft);font-size:11px;line-height:1.5;margin-top:3px}
+.portal-arrow{font-size:21px;color:var(--accent);padding:0 2px}
+.portal-footnote{font-size:10px;color:var(--ink-soft);margin:17px 2px 0;line-height:1.6}
+.landing-bottom{flex:0 0 auto;margin-top:auto;border-top:1px solid var(--line);padding:16px 0 clamp(18px,3vh,28px);display:flex;align-items:center;justify-content:space-between;gap:20px}
+.landing-bottom .small-note{font-size:11px;color:var(--ink-soft)}
+
+/* Modal + simple authentication previews */
+.modal-backdrop{position:fixed;inset:0;background:rgba(35,21,47,.55);backdrop-filter:blur(5px);display:none;place-items:center;padding:20px;z-index:100}
+.modal-backdrop.open{display:grid}
+.modal{position:relative;width:min(440px,100%);background:var(--surface);border:1px solid var(--line);border-radius:23px;padding:30px;box-shadow:0 30px 90px rgba(25,12,38,.28)}
+.modal-close{position:absolute;right:16px;top:13px;border:0;background:transparent;color:var(--ink-soft);font-size:25px;padding:5px}
+.modal-role{font-size:10px;letter-spacing:.15em;text-transform:uppercase;font-weight:850;color:#337d64}
+.modal h2{font-size:25px;letter-spacing:-.05em;margin:8px 0 5px}
+.modal-intro{font-size:12px;color:var(--ink-soft);margin:0 0 20px;line-height:1.65}
+.field{margin:13px 0}
+.field label{display:block;font-size:11px;font-weight:750;margin-bottom:6px}
+.field input{width:100%;border:1px solid var(--line);border-radius:11px;padding:12px 13px;background:#fbf9fd;color:var(--ink);font-size:13px}
+.form-row{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:11px;margin:4px 0 14px}
+.text-link{color:var(--accent);font-weight:750;border:0;background:transparent;padding:0;font-size:11px}
+.modal .submit{width:100%;margin-top:6px}
+.modal-bottom{border-top:1px solid var(--line);margin-top:18px;padding-top:16px;text-align:center;font-size:11px;color:var(--ink-soft)}
+.notice{display:none;border-radius:11px;padding:11px 12px;margin-top:13px;font-size:11px;line-height:1.55;background:var(--accent-2);color:var(--accent)}
+.notice.show{display:block}
+.back-link{border:0;background:none;padding:0;color:var(--ink-soft);font-size:11px;font-weight:700;margin-bottom:16px}
+
+/* Authenticated first-stop: project introduction and how it works. */
+.page{display:none;min-height:100vh}
+.page.active{display:block}
+.app-topbar{height:74px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:18px}
+.app-topbar .right{display:flex;align-items:center;gap:12px}
+.user-chip{display:flex;align-items:center;gap:9px;font-size:11px;color:var(--ink-soft);font-weight:700}
+.avatar{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--mint);color:#236d55;font-size:12px;font-weight:850}
+.onboarding{padding:48px 0 64px}
+.onboarding .eyebrow:before,.workspace .eyebrow:before{display:none;content:none}
+.welcome-strip{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;margin-bottom:30px}
+.welcome-strip h1{font-size:clamp(32px,4vw,48px);line-height:1.06;letter-spacing:-.06em;margin:10px 0 10px}
+.welcome-strip p{font-size:14px;color:var(--ink-soft);max-width:650px;margin:0;line-height:1.8}
+.role-label{white-space:nowrap;background:var(--mint);border-radius:999px;padding:8px 12px;color:#236d55;font-size:10px;font-weight:850;letter-spacing:.1em;text-transform:uppercase}
+.about-banner{background:var(--accent);color:white;border-radius:26px;padding:30px;display:grid;grid-template-columns:1.15fr .85fr;gap:30px;align-items:center;overflow:hidden;position:relative}
+.about-banner:after{content:"";position:absolute;width:320px;height:320px;border:1px solid rgba(255,255,255,.15);border-radius:50%;right:-95px;top:-135px;box-shadow:0 0 0 35px rgba(255,255,255,.035),0 0 0 75px rgba(255,255,255,.025)}
+.about-banner .eyebrow{color:var(--mint)}
+.about-banner h2{font-family:var(--serif);font-size:clamp(28px,3.5vw,42px);line-height:1.12;font-weight:500;letter-spacing:-.035em;margin:12px 0}
+.about-banner p{color:#e8ddf2;font-size:13px;line-height:1.8;margin:0;max-width:600px}
+.banner-stat{position:relative;z-index:1;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.20);border-radius:19px;padding:20px}
+.banner-stat strong{display:block;font-size:36px;letter-spacing:-.06em;color:var(--mint)}
+.banner-stat span{display:block;font-size:11px;color:#eee5f3;line-height:1.6}
+.content-section{margin-top:34px}
+.section-title{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:17px}
+.section-title .eyebrow{margin-bottom:7px}
+.section-title h2{font-size:25px;letter-spacing:-.045em;margin:0}
+.section-title p{font-size:11px;color:var(--ink-soft);margin:0;max-width:370px}
+.workflow-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.workflow-card{background:white;border:1px solid var(--line);border-radius:18px;padding:21px;min-height:190px}
+.workflow-number{width:34px;height:34px;border-radius:11px;background:var(--mint);color:#236d55;display:grid;place-items:center;font-size:11px;font-weight:900;margin-bottom:18px}
+.workflow-card h3{font-size:15px;margin:0 0 7px}
+.workflow-card p{font-size:11px;color:var(--ink-soft);line-height:1.7;margin:0}
+.capability-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.capability{padding:19px;background:var(--surface-2);border-radius:16px}
+.capability .cap-icon{width:42px;height:42px;border-radius:13px;background:var(--surface);color:var(--accent);display:grid;place-items:center;margin-bottom:12px}
+.capability .cap-icon svg{width:22px;height:22px;display:block;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.capability strong{display:block;font-size:13px;margin-bottom:5px}
+.capability p{font-size:11px;line-height:1.65;color:var(--ink-soft);margin:0}
+.safety-note{background:#fff;border:1px solid #d8eadf;border-left:4px solid var(--mint-strong);border-radius:12px;padding:14px 16px;font-size:11px;color:var(--ink-soft);line-height:1.7;margin-top:24px}
+.onboarding-actions{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-top:25px}
+.onboarding-actions .left-note{font-size:10px;color:var(--ink-soft)}
+
+/* Workspace shell */
+.workspace{display:none;min-height:100vh}
+.workspace.active{display:block}
+.workspace-layout{display:grid;grid-template-columns:220px minmax(0,1fr);min-height:calc(100vh - 74px)}
+.sidebar{background:#fbf9fd;border-right:1px solid var(--line);padding:24px 15px;display:flex;flex-direction:column;gap:7px}
+.sidebar-label{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:#9a8aa6;font-weight:850;padding:10px 12px 7px}
+.side-link{border:0;background:transparent;padding:11px 12px;border-radius:11px;text-align:left;color:var(--ink-soft);font-size:12px;font-weight:700;display:flex;align-items:center;gap:10px}
+.side-link:hover,.side-link.active{background:var(--accent-2);color:var(--accent)}
+.side-link .side-symbol{width:19px;text-align:center;font-size:15px}
+.sidebar-bottom{margin-top:auto;padding:13px;border:1px solid var(--line);border-radius:13px;background:white;font-size:10px;color:var(--ink-soft);line-height:1.6}
+.workspace-main{padding:28px clamp(20px,4vw,48px);min-width:0}
+.workspace-page{display:none;max-width:1080px;margin:0 auto}
+.workspace-page.active{display:block}
+.workspace-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:15px;margin-bottom:23px}
+.workspace-heading h1{font-size:31px;letter-spacing:-.055em;margin:5px 0 5px}
+.workspace-heading p{font-size:12px;color:var(--ink-soft);margin:0}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin-bottom:16px}
+.stat-card,.panel{background:white;border:1px solid var(--line);border-radius:17px;padding:18px}
+.stat-card small{font-size:10px;color:var(--ink-soft);font-weight:650}
+.stat-card strong{display:block;font-size:27px;letter-spacing:-.05em;margin:7px 0 1px}
+.stat-card span{font-size:10px;color:var(--ink-soft)}
+.dashboard-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:14px}
+.panel-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+.panel-title h3{font-size:14px;margin:0}
+.sample-tag{font-size:9px;font-weight:850;letter-spacing:.08em;text-transform:uppercase;color:#287653;background:var(--mint);padding:5px 8px;border-radius:999px}
+.latest-result{display:grid;grid-template-columns:105px 1fr;gap:18px;align-items:center}
+.xray-placeholder{height:125px;border-radius:13px;background:linear-gradient(135deg,#40354d,#21182d);position:relative;overflow:hidden;display:grid;place-items:center}
+.xray-placeholder svg{width:90%;height:90%;opacity:.8}
+.result-grade{font-size:34px;font-weight:850;letter-spacing:-.06em;line-height:1}
+.result-grade small{font-size:12px;color:var(--ink-soft);font-weight:600;letter-spacing:0}
+.result-meta{font-size:11px;color:var(--ink-soft);margin-top:8px}
+.activity-list{display:flex;flex-direction:column}
+.activity-row{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #f0eaf4;font-size:11px}
+.activity-row:last-child{border-bottom:0}.activity-row[role="button"]{cursor:pointer}.activity-row[role="button"]:hover{background:#fbf9fd}
+.activity-date{color:var(--ink-soft);width:85px;flex:0 0 85px}
+.activity-id{font-weight:750;flex:1}
+.grade-pill{padding:4px 8px;border-radius:999px;background:var(--accent-2);color:var(--accent);font-size:9px;font-weight:850}
+
+/* Upload */
+.upload-box{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;width:100%;min-height:224px;box-sizing:border-box;position:relative;overflow:hidden;border:1.5px dashed #c6b6d5;background:#fbf9fd;border-radius:18px;padding:34px 22px;text-align:center;cursor:pointer;transition:border-color .18s,background .18s,box-shadow .18s}
+.upload-box:hover,.upload-box.dragover{border-color:var(--mint-strong);background:#f2fcf7;box-shadow:inset 0 0 0 1px rgba(56,201,150,.12)}
+.upload-box h3,.upload-box p{max-width:100%;overflow-wrap:anywhere}
+.upload-box:focus-visible{outline:3px solid rgba(56,201,150,.55);outline-offset:4px}
+.upload-symbol{width:52px;height:52px;background:var(--mint);border-radius:16px;color:#236d55;display:grid;place-items:center;margin:0 auto 12px;font-size:23px}
+.upload-box h3{font-size:15px;margin:0 0 6px}
+.upload-box p{font-size:11px;color:var(--ink-soft);margin:0}
+.upload-status{margin-top:13px;min-height:18px;font-size:11px;color:var(--ink-soft);overflow-wrap:anywhere}
+.upload-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+
+/* Results */
+.result-summary{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:14px}
+.result-value{font-size:36px;font-weight:850;letter-spacing:-.06em;margin-top:6px}
+.progress-track{height:7px;background:var(--accent-2);border-radius:999px;overflow:hidden;margin-top:10px}
+.progress-track span{display:block;height:100%;width:87%;background:var(--mint-strong);border-radius:999px}
+.result-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.heatmap-placeholder{height:190px;background:radial-gradient(ellipse at 52% 51%,rgba(56,201,150,.9),transparent 15%),radial-gradient(ellipse at 40% 58%,rgba(183,123,219,.72),transparent 27%),radial-gradient(ellipse at 65% 35%,rgba(99,57,133,.58),transparent 32%),linear-gradient(135deg,#32233f,#21182d);border-radius:13px;position:relative;overflow:hidden}
+.heatmap-placeholder:after{content:"ILLUSTRATIVE VISUAL ONLY";position:absolute;bottom:10px;left:11px;color:white;background:rgba(0,0,0,.30);padding:5px 8px;border-radius:6px;font-size:8px;letter-spacing:.1em}
+.report-text{font-size:11px;line-height:1.85;color:var(--ink-soft)}
+.required-disclaimer{margin-top:13px;padding:11px 12px;border-radius:10px;background:#f7f2e8;color:#725a27;font-size:10px;line-height:1.65}
+.table-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse;min-width:540px;font-size:11px}
+th{text-align:left;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:#927fa1;padding:11px 9px;border-bottom:1px solid var(--line)}
+td{padding:14px 9px;border-bottom:1px solid #f1edf4;color:var(--ink-soft)}
+td:first-child{font-weight:750;color:var(--ink)}
+.account-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.account-value{font-size:13px;font-weight:750;margin-top:6px;overflow-wrap:anywhere}
+.empty-state{text-align:center;padding:33px 18px;color:var(--ink-soft)}
+.empty-state .empty-icon{font-size:30px;color:var(--accent);margin-bottom:12px}
+.empty-state h3{font-size:15px;color:var(--ink);margin:0 0 6px}
+.empty-state p{font-size:11px;max-width:400px;margin:0 auto;line-height:1.7}
+.toast{position:fixed;bottom:22px;left:50%;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:#2d1b3d;color:white;padding:11px 16px;border-radius:999px;font-size:11px;box-shadow:var(--shadow);transition:.2s;z-index:120}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+
+/* Doctor portal additions */
+.doctor-intro-note{font-size:10px;color:var(--ink-soft);line-height:1.65}
+.workspace-page,.dashboard-grid,.dashboard-grid > *, .panel,.table-wrap{min-width:0}
+.table-wrap{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.doctor-filter-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.doctor-search{flex:1 1 230px;min-width:190px;border:1px solid var(--line);border-radius:11px;padding:11px 13px;background:#fff;color:var(--ink);font:inherit;font-size:12px}
+.doctor-select{border:1px solid var(--line);border-radius:11px;padding:10px 12px;background:#fff;color:var(--ink);font:inherit;font-size:12px}
+.doctor-table{min-width:680px}
+.doctor-table.records{min-width:790px}
+.patient-account{display:flex;flex-direction:column;gap:3px}
+.patient-account strong{font-size:11px;color:var(--ink)}
+.patient-account small{font-size:10px;color:var(--ink-soft)}
+.doctor-action{border:0;background:transparent;padding:5px 0;color:var(--accent);font:inherit;font-size:10px;font-weight:800;cursor:pointer;white-space:nowrap}
+.doctor-action:hover{text-decoration:underline}
+.source-pill{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:5px 8px;font-size:9px;font-weight:850;white-space:nowrap}
+.source-pill.cached{background:#f2edf8;color:#694c80}
+.source-pill.live{background:#e7f8ef;color:#237554}
+.patient-summary-head{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:16px;padding:18px;background:#fff;border:1px solid var(--line);border-radius:17px}
+.patient-summary-email{font-size:12px;color:var(--ink-soft);overflow-wrap:anywhere;margin-top:4px}
+.patient-id{display:inline-flex;padding:5px 9px;border-radius:999px;background:var(--accent-2);color:var(--accent);font-size:9px;font-weight:850;letter-spacing:.06em}
+.report-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin-bottom:14px}
+.report-metric{background:#fff;border:1px solid var(--line);border-radius:15px;padding:16px}
+.report-metric small{display:block;font-size:10px;color:var(--ink-soft)}
+.report-metric strong{display:block;font-size:25px;letter-spacing:-.05em;margin-top:7px}
+.report-panel{background:#fff;border:1px solid var(--line);border-radius:17px;padding:20px}
+.report-panel h3{font-size:14px;margin:0 0 12px}
+.report-placeholder{padding:17px;border-radius:12px;background:#fbf9fd;border:1px solid var(--line);font-size:12px;line-height:1.85;color:var(--ink-soft)}
+.report-context{display:flex;gap:10px;align-items:flex-start;background:#f4f0f8;border:1px solid var(--line);border-radius:12px;padding:13px 14px;font-size:10px;line-height:1.7;color:var(--ink-soft);margin-top:14px}
+.report-context svg{width:17px;height:17px;flex:0 0 17px;color:var(--accent)}
+.report-disclaimer{margin-top:14px;padding:12px 14px;background:#fff8e9;border:1px solid #f0dfb7;border-radius:11px;color:#765a22;font-size:10px;line-height:1.7}
+.doctor-quick-list{display:flex;flex-direction:column}
+.doctor-quick-row{display:flex;align-items:center;gap:11px;padding:12px 0;border-bottom:1px solid #f0eaf4}
+.doctor-quick-row:last-child{border-bottom:0}
+.doctor-avatar{width:35px;height:35px;border-radius:12px;background:var(--accent-2);color:var(--accent);display:grid;place-items:center;font-size:11px;font-weight:850;flex:0 0 35px}
+.doctor-quick-copy{flex:1;min-width:0}
+.doctor-quick-copy strong{display:block;font-size:11px}
+.doctor-quick-copy small{display:block;font-size:10px;color:var(--ink-soft);overflow-wrap:anywhere}
+.doctor-back{margin-bottom:15px}
+.doctor-access-note{font-size:10px;color:var(--ink-soft);line-height:1.7;margin-top:12px}
+@media(max-width:720px){.report-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.patient-summary-head{align-items:flex-start;flex-direction:column}}
+@media(max-width:480px){.report-metrics{grid-template-columns:1fr 1fr}.doctor-select{flex:1}}
+
+@media(max-width:900px){.landing-grid{grid-template-columns:1fr;gap:27px}.intro-copy{padding-bottom:0}.portal-panel{max-width:650px}.about-banner{grid-template-columns:1fr}.banner-stat{max-width:240px}.dashboard-grid{grid-template-columns:1fr}}
+@media(max-width:720px){.container{width:min(100% - 30px,1180px)}.landing.container,.landing-bottom.container{width:min(100% - 30px,1360px)}.landing{padding:28px 0 32px}.landing-grid{min-height:0}.intro-brand{font-size:58px}.landing-bottom{flex-direction:column;align-items:flex-start}.workflow-grid,.capability-grid{grid-template-columns:1fr}.welcome-strip{flex-direction:column}.section-title{display:block}.section-title p{margin-top:8px}.workspace-layout{grid-template-columns:1fr}.sidebar{border-right:0;border-bottom:1px solid var(--line);padding:9px 12px;flex-direction:row;overflow:auto}.sidebar-label,.sidebar-bottom{display:none}.side-link{white-space:nowrap;padding:9px 11px}.workspace-main{padding:22px 15px}.app-topbar{height:66px}.stat-grid{grid-template-columns:repeat(2,1fr)}.result-detail-grid,.account-grid{grid-template-columns:1fr}}
+@media(max-width:480px){.portal-panel{padding:18px}.portal-card{padding:14px}.intro-brand{font-size:50px}.intro-headline{font-size:32px}.portal-heading h2{font-size:22px}.result-summary{grid-template-columns:1fr 1fr}.latest-result{grid-template-columns:85px 1fr}.xray-placeholder{height:110px}.workspace-heading{align-items:flex-start;flex-direction:column}}
+
+.upload-status.error{color:#a33b3b}.upload-status.success{color:#237554}
+button:disabled{opacity:.55;cursor:not-allowed;transform:none!important;box-shadow:none!important}
+#patientHeatmapImage{min-height:150px}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <!-- LANDING / PORTAL SELECTION -->
+  <section class="page active" id="landingPage" aria-label="KneeSense introduction and portal selection">
+        <main class="container landing" id="top">
+      <div class="landing-grid">
+        <div class="intro-copy" id="purpose">
+          <div class="intro-kicker"><span></span> AI-ASSISTED KNEE OSTEOARTHRITIS ASSESSMENT</div>
+          <div class="intro-brand">Knee<em>Sense</em></div>
+          <h1 class="intro-headline">A clearer view of knee health.</h1>
+          <p class="intro-description">KneeSense is an academic project exploring how artificial intelligence can support the assessment of knee osteoarthritis from a single X-ray — with a severity estimate, visual explanation and readable summaries.</p>
+          <div class="intro-points">
+            <span class="pill"><b>01</b> KL grade estimation</span>
+            <span class="pill"><b>02</b> Grad-CAM visualisation</span>
+            <span class="pill"><b>03</b> AI-generated summaries</span>
+          </div>
+        </div>
+        <div class="portal-panel" id="portalSelection">
+          <div class="portal-heading">
+            <div class="eyebrow">PORTAL ACCESS</div>
+            <h2>Choose your login</h2>
+            <p>Select the portal that matches your role.</p>
+          </div>
+          <button class="portal-card" type="button" data-login-role="Patient" aria-label="Open patient login">
+            <span class="portal-icon" aria-hidden="true">
+              <svg width="25" height="25" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="1.7"/><path d="M4.8 20c.7-3.3 3.2-5.2 7.2-5.2s6.5 1.9 7.2 5.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+            </span>
+            <span class="portal-copy"><strong>Patient Login</strong><small>Upload X-rays, view assessment results and review your history.</small></span>
+            <span class="portal-arrow" aria-hidden="true">→</span>
+          </button>
+          <button class="portal-card doctor" type="button" data-login-role="Doctor" aria-label="Open doctor login">
+            <span class="portal-icon" aria-hidden="true">
+              <svg width="25" height="25" viewBox="0 0 24 24" fill="none"><path d="M8 4v4a4 4 0 0 0 8 0V4M6 4h4M14 4h4M12 12v2.2a4.8 4.8 0 1 0 4.8 4.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="16.8" cy="19" r="1.2" fill="currentColor"/></svg>
+            </span>
+            <span class="portal-copy"><strong>Doctor Login</strong><small>Access assigned patients and clinician-oriented reports.</small></span>
+            <span class="portal-arrow" aria-hidden="true">→</span>
+          </button>
+          <p class="portal-footnote">Separate portals help keep patient and doctor access appropriate to their roles. Doctor accounts are provisioned by the system administrator.</p>
+        </div>
+      </div>
+    </main>
+  </section>
+
+  <!-- LOGIN / REGISTRATION / RECOVERY MODAL -->
+  <div class="modal-backdrop" id="authModal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+    <div class="modal">
+      <button type="button" class="modal-close" id="closeAuth" aria-label="Close">×</button>
+      <div class="modal-role" id="authRole">PATIENT PORTAL</div>
+      <h2 id="authTitle">Welcome back</h2>
+      <p class="modal-intro" id="authDescription">Sign in to continue to your KneeSense portal.</p>
+      <form id="loginForm">
+        <div class="field"><label for="loginEmail">Email address</label><input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="email" required></div>
+        <div class="field"><label for="loginPassword">Password</label><input id="loginPassword" type="password" placeholder="Enter your password" autocomplete="current-password" required></div>
+        <div class="form-row"><span></span><button class="text-link" id="forgotLink" type="button">Forgot password?</button></div>
+        <button class="btn submit" type="submit">Sign in <span>→</span></button>
+        <div class="notice" id="loginNotice" role="status">Sign-in failed. Check your credentials and try again.</div>
+      </form>
+      <div class="modal-bottom" id="registerPrompt">New to KneeSense? <button class="text-link" id="registerLink" type="button">Create a patient account</button></div>
+    </div>
+  </div>
+
+  <!-- PATIENT REGISTRATION MODAL -->
+  <div class="modal-backdrop" id="registerModal" role="dialog" aria-modal="true" aria-labelledby="registerTitle">
+    <div class="modal">
+      <button type="button" class="modal-close" id="closeRegister" aria-label="Close">×</button>
+      <div class="modal-role">PATIENT REGISTRATION</div>
+      <h2 id="registerTitle">Create your account</h2>
+      <p class="modal-intro">Create a patient account to access the Patient Portal. Your patient role is assigned automatically.</p>
+      <form id="registerForm">
+        <div class="field"><label for="registerEmail">Email address</label><input id="registerEmail" type="email" placeholder="you@example.com" autocomplete="email" required></div>
+        <div class="field"><label for="registerPassword">Create password</label><input id="registerPassword" type="password" placeholder="At least 8 characters" minlength="8" autocomplete="new-password" required></div>
+        <div class="field"><label for="confirmPassword">Confirm password</label><input id="confirmPassword" type="password" placeholder="Re-enter your password" minlength="8" autocomplete="new-password" required></div>
+        <button class="btn submit" type="submit">Create patient account</button>
+        <div class="notice" id="registerNotice" role="status"></div>
+      </form>
+      <div class="modal-bottom">Already registered? <button class="text-link" id="backToLogin" type="button">Back to patient login</button></div>
+    </div>
+  </div>
+
+  <!-- FORGOT PASSWORD MODAL -->
+  <div class="modal-backdrop" id="forgotModal" role="dialog" aria-modal="true" aria-labelledby="forgotTitle">
+    <div class="modal">
+      <button type="button" class="modal-close" id="closeForgot" aria-label="Close">×</button>
+      <div class="modal-role">ACCOUNT RECOVERY</div>
+      <h2 id="forgotTitle">Reset your password</h2>
+      <p class="modal-intro">Enter your registered email address. Password recovery is not available in the current backend integration.</p>
+      <form id="forgotForm">
+        <div class="field"><label for="recoveryEmail">Email address</label><input id="recoveryEmail" type="email" placeholder="you@example.com" required></div>
+        <button class="btn submit" type="submit">Continue</button>
+        <div class="notice" id="forgotNotice" role="status">Password recovery is not connected.</div>
+      </form>
+      <div class="modal-bottom"><button class="text-link" id="forgotBack" type="button">Back to login</button></div>
+    </div>
+  </div>
+
+  <!-- POST-LOGIN PROJECT INTRODUCTION / HOW IT WORKS -->
+  <section class="page" id="onboardingPage" aria-label="About KneeSense and how it works">
+    <header class="container app-topbar">
+      <a class="brand-wordmark" href="#" aria-label="KneeSense"><strong>KneeSense</strong></a>
+      <div class="right"><div class="user-chip"><span class="avatar" id="welcomeAvatar">P</span><span id="welcomeIdentity">Patient</span></div><button class="btn outline small" id="onboardingLogout">Sign out</button></div>
+    </header>
+    <main class="container onboarding">
+      <div class="welcome-strip">
+        <div><h1 id="welcomeTitle">Welcome to KneeSense</h1><p id="welcomeDescription">Before you continue, here's a quick introduction to the project, what the system is designed to do, and how an assessment moves through KneeSense.</p></div>
+        <span class="role-label" id="welcomeRole">PATIENT PORTAL</span>
+      </div>
+      <section class="about-banner">
+        <div><div class="eyebrow">ABOUT THE PROJECT</div><h2>AI-assisted insight, made easier to understand.</h2><p>KneeSense is an academic project exploring the use of deep learning to estimate knee osteoarthritis severity from a single knee X-ray. The planned experience combines a KL grade estimate, a Grad-CAM visual explanation and readable summaries.</p></div>
+        <div class="banner-stat"><strong>0–4</strong><span>Kellgren–Lawrence grading scale used to represent the estimated osteoarthritis grade.</span></div>
+      </section>
+      <section class="content-section">
+        <div class="section-title"><div><div class="eyebrow">HOW IT WORKS</div><h2>From X-ray to assessment summary</h2></div><p>The portal is connected to the backend. During development, results may be simulated until the real ML service is enabled.</p></div>
+        <div class="workflow-grid">
+          <article class="workflow-card"><div class="workflow-number">01</div><h3>Submit a knee X-ray</h3><p>The patient selects a knee X-ray image. The application validates the file before sending it to the AI service.</p></article>
+          <article class="workflow-card"><div class="workflow-number">02</div><h3>AI-assisted assessment</h3><p>The planned EfficientNet-B0 model estimates a KL grade. Grad-CAM provides a visual explanation of image regions that influenced the prediction.</p></article>
+          <article class="workflow-card"><div class="workflow-number">03</div><h3>Review the result</h3><p>The application presents the grade, confidence, visual explanation and a patient-friendly summary. Doctors have a separate clinician-oriented view.</p></article>
+        </div>
+      </section>
+      <section class="content-section">
+        <div class="section-title"><div><div class="eyebrow">WHAT KNEESENSE INCLUDES</div><h2>Three parts of the assessment experience</h2></div></div>
+        <div class="capability-grid">
+          <article class="capability"><div class="cap-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19.5h16M6.5 16V10M12 16V5M17.5 16V8"/><circle cx="6.5" cy="8" r="1.2"/><circle cx="12" cy="3.5" r="1.2"/><circle cx="17.5" cy="6.5" r="1.2"/></svg></div><strong>KL grade estimation</strong><p>A model-generated estimate on the Kellgren–Lawrence scale from Grade 0 to Grade 4.</p></article>
+          <article class="capability"><div class="cap-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 3.5H5.5v5M16 3.5h2.5v5M8 20.5H5.5v-5M16 20.5h2.5v-5M12 8.5v7M8.5 12h7"/><circle cx="12" cy="12" r="3.2"/></svg></div><strong>Visual explanation</strong><p>A Grad-CAM heatmap intended to illustrate which image regions influenced the model output.</p></article>
+          <article class="capability"><div class="cap-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 3.5h7l4 4v13H7z"/><path d="M14 3.5v4h4M10 12h5M10 15.5h5"/></svg></div><strong>Readable reports</strong><p>Separate patient-friendly and clinician-oriented summaries, shown according to account permissions.</p></article>
+        </div>
+      </section>
+      <div class="safety-note"><strong>Important:</strong> KneeSense is an academic prototype, not a medical device or a substitute for professional diagnosis. AI-generated outputs may be incorrect and must be reviewed by a qualified healthcare professional. Do not use this prototype to make medical decisions.</div>
+      <div class="onboarding-actions"><span class="left-note" id="onboardingActionsNote">Review the project information before entering your portal.</span><button class="btn" id="continueToWorkspace"><span id="continueButtonLabel">Go to Patient Dashboard</span> <span aria-hidden="true">→</span></button></div>
+    </main>
+  </section>
+
+  <!-- PATIENT PORTAL -->
+  <section class="workspace" id="patientWorkspace" aria-label="Patient portal">
+    <header class="container app-topbar">
+      <a class="brand-wordmark" href="#"><strong>KneeSense</strong><small>Patient Portal</small></a>
+      <div class="right"><div class="user-chip"><span class="avatar" id="patientAvatar">P</span><span id="patientEmailTop">patient@example.com</span></div><button class="btn outline small" id="patientLogout">Sign out</button></div>
+    </header>
+    <div class="workspace-layout">
+      <aside class="sidebar">
+        <div class="sidebar-label">Patient menu</div>
+        <button class="side-link active" data-patient-view="dashboard"><span class="side-symbol">▦</span>Dashboard</button>
+        <button class="side-link" data-patient-view="upload"><span class="side-symbol">＋</span>New assessment</button>
+        <button class="side-link" data-patient-view="history"><span class="side-symbol">◷</span>Assessment history</button>
+        <button class="side-link" data-patient-view="account"><span class="side-symbol">○</span>Account & privacy</button>
+        <div class="sidebar-bottom">Your records are loaded from your account. Original X-ray images and historical heatmaps are not retained.</div>
+      </aside>
+      <main class="workspace-main">
+        <section class="workspace-page active" id="patientDashboard">
+          <div class="workspace-heading"><div><div class="eyebrow">PATIENT OVERVIEW</div><h1>Your dashboard</h1><p>A quick view of your assessment activity.</p></div><button class="btn" data-open-patient-view="upload">＋ New assessment</button></div>
+          <div class="stat-grid">
+            <article class="stat-card"><small>Total assessments</small><strong id="patientAssessmentCount">0</strong><span>Saved records</span></article>
+            <article class="stat-card"><small>Latest KL grade</small><strong id="patientLatestGrade">—</strong><span>Most recent assessment</span></article>
+            <article class="stat-card"><small>Last assessment</small><strong id="patientLatestDate">—</strong><span id="patientLatestDateYear">No assessments yet</span></article>
+          </div>
+          <div class="dashboard-grid">
+            <article class="panel"><div class="panel-title"><h3>Latest assessment</h3><span class="sample-tag" id="patientLatestTag">No records</span></div><div class="latest-result"><div class="xray-placeholder" aria-label="No X-ray is retained"><span style="color:#e8e0f5;font-size:11px;text-align:center;padding:10px">No image stored</span></div><div><div class="result-grade" id="patientLatestGradeCard">— <small>/ 4</small></div><div class="result-meta" id="patientLatestMeta">Upload a knee X-ray to begin.</div><button class="btn soft small" style="margin-top:12px" id="patientLatestView" type="button" disabled>View latest result →</button></div></div></article>
+            <article class="panel"><div class="panel-title"><h3>Recent activity</h3><button class="text-link" data-open-patient-view="history">View all</button></div><div class="activity-list" id="patientRecentActivity"><div class="empty-state"><h3>No assessments yet</h3><p>Your saved assessments will appear here.</p></div></div></article>
+          </div>
+          <div class="safety-note"><strong>Important:</strong> KneeSense is an academic prototype, not a diagnostic service. Model confidence is uncalibrated and is not the probability that a grade is correct. Confirm all findings with a qualified clinician.</div>
+        </section>
+
+        <section class="workspace-page" id="patientUpload">
+          <div class="workspace-heading"><div><div class="eyebrow">NEW ASSESSMENT</div><h1>Upload a knee X-ray</h1><p>Submit a PNG or JPEG image for assessment.</p></div></div>
+          <article class="panel">
+            <div class="panel-title"><h3>Select an X-ray image</h3></div>
+            <label class="upload-box" for="xrayFile" tabindex="0" aria-label="Choose or drop a knee X-ray image"><div class="upload-symbol" aria-hidden="true">⇧</div><h3>Drag and drop or browse files</h3><p>PNG or JPEG · Maximum file size: 5 MB</p><input id="xrayFile" type="file" accept="image/png,image/jpeg,.jpg,.jpeg,.png" hidden></label>
+            <div class="upload-status" id="uploadStatus" aria-live="polite">No file selected.</div>
+            <div class="upload-actions"><button class="btn" id="submitAssessment" type="button" disabled>Upload and assess →</button><button class="btn outline" id="clearUpload" type="button">Clear selection</button></div>
+            <div class="safety-note"><strong>Privacy:</strong> The image is sent to the backend for processing and is not retained as an image file. Only assessment metadata, grade, confidence and reports are saved. KneeSense is an educational prototype. AI-generated results are not a diagnosis and must not guide treatment decisions without a qualified clinician.</div>
+          </article>
+        </section>
+
+        <section class="workspace-page" id="patientResult">
+          <div class="workspace-heading"><div><div class="eyebrow" id="patientResultEyebrow">ASSESSMENT RESULT</div><h1 id="patientResultTitle">Assessment result</h1><p id="patientResultSubtitle">Review the returned assessment summary.</p></div><span class="sample-tag" id="patientResultSource">Awaiting result</span></div>
+          <div class="result-summary"><article class="panel"><small class="muted">Predicted KL grade</small><div class="result-value"><span id="patientResultGrade">—</span> <span style="font-size:13px;color:var(--ink-soft);font-weight:600">/ 4</span></div><span class="muted" style="font-size:10px">Model output; not a diagnosis</span></article><article class="panel"><small class="muted">Model confidence score (uncalibrated)</small><div class="result-value" id="patientResultConfidence">—</div><div class="progress-track"><span id="patientConfidenceBar" style="width:0"></span></div><span class="muted" style="font-size:10px">Not the probability that the predicted grade is correct.</span></article></div>
+          <div class="result-detail-grid"><article class="panel"><div class="panel-title"><h3>Grad-CAM visualisation</h3></div><img id="patientHeatmapImage" alt="Grad-CAM model explanation heatmap" style="display:none;width:100%;max-height:260px;object-fit:contain;border-radius:13px;background:#21182d"><div class="empty-state" id="patientHeatmapUnavailable"><h3>Heatmap unavailable</h3><p>Historical heatmaps are not stored. The heatmap is available only in the immediate upload response.</p></div><p class="muted" id="patientHeatmapNote" style="font-size:10px;margin-bottom:0">A heatmap is an explanation aid, not a precise localisation of disease.</p></article><article class="panel"><div class="panel-title"><h3>Patient-friendly summary</h3></div><p class="report-text" id="patientReportText">No assessment selected.</p><div class="required-disclaimer">AI-generated summary — not a diagnosis, confirm with a doctor.</div></article></div>
+          <div style="margin-top:15px;display:flex;gap:10px;flex-wrap:wrap"><button class="btn outline small" data-open-patient-view="history">Back to assessment history</button><button class="btn small" data-open-patient-view="upload">New assessment</button></div>
+        </section>
+
+        <section class="workspace-page" id="patientHistory">
+          <div class="workspace-heading"><div><div class="eyebrow">YOUR RECORDS</div><h1>Assessment history</h1><p>Review assessments saved to your account.</p></div></div>
+          <article class="panel"><div class="panel-title"><h3>Previous assessments</h3><span class="sample-tag">Account records</span></div><div class="table-wrap"><table><thead><tr><th>Assessment ID</th><th>Date</th><th>KL grade</th><th>Confidence</th><th>Source</th><th></th></tr></thead><tbody id="patientHistoryBody"></tbody></table></div><p class="muted" style="font-size:10px;margin:14px 0 0">Historical records contain grade, confidence and patient report only. Original X-ray images and heatmaps are not stored.</p></article>
+        </section>
+
+        <section class="workspace-page" id="patientAccount">
+          <div class="workspace-heading"><div><div class="eyebrow">ACCOUNT SETTINGS</div><h1>Account & privacy</h1><p>Review your account details and data-handling information.</p></div></div>
+          <div class="account-grid"><article class="panel"><div class="panel-title"><h3>Account information</h3></div><small class="muted">Registered email</small><div class="account-value" id="accountEmail">Not loaded</div><div style="margin-top:13px"><small class="muted">Account type</small><div class="account-value">Patient</div></div></article><article class="panel"><div class="panel-title"><h3>Privacy & data</h3></div><p class="report-text">Assessment metadata, predicted grade, confidence and reports are retained for history. The original X-ray and Grad-CAM heatmap are not stored in assessment history.</p><button class="btn outline small" id="deleteDemoData" type="button">Delete my account</button></article></div>
+          <div class="safety-note">Deleting your account permanently removes your account and associated assessment records. This action cannot be undone.</div>
+        </section>
+      </main>
+    </div>
+  </section>
+
+  <!-- DOCTOR PORTAL -->
+  <section class="workspace" id="doctorWorkspace" aria-label="Doctor portal">
+    <header class="container app-topbar">
+      <a class="brand-wordmark" href="#" aria-label="KneeSense"><strong>KneeSense</strong><small>Doctor Portal</small></a>
+      <div class="right"><div class="user-chip"><span class="avatar">D</span><span id="doctorEmailTop">Not loaded</span></div><button class="btn outline small" id="doctorLogout" type="button">Sign out</button></div>
+    </header>
+    <div class="workspace-layout">
+      <aside class="sidebar" aria-label="Doctor navigation">
+        <div class="sidebar-label">Doctor Portal</div>
+        <button class="side-link active" type="button" data-doctor-view="dashboard"><span class="side-symbol">▦</span>Dashboard</button>
+        <button class="side-link" type="button" data-doctor-view="patients"><span class="side-symbol">♙</span>Assigned patients</button>
+        <button class="side-link" type="button" data-doctor-view="records"><span class="side-symbol">▤</span>Assessment records</button>
+        <button class="side-link" type="button" data-doctor-view="account"><span class="side-symbol">○</span>Account settings</button>
+        <div class="sidebar-bottom"><strong>Restricted access</strong><br>Only patients assigned to your doctor account are returned by the backend.</div>
+      </aside>
+
+      <main class="workspace-main">
+        <!-- Doctor dashboard -->
+        <section class="workspace-page active" id="doctorDashboard">
+          <div class="workspace-heading">
+            <div><div class="eyebrow">DOCTOR OVERVIEW</div><h1>Your dashboard</h1><p>Review assessment records for patients assigned to your account.</p></div>
+            <span class="sample-tag">Account data</span>
+          </div>
+          <div class="stat-grid">
+            <article class="stat-card"><small>Assigned patients</small><strong id="doctorPatientCount">0</strong><span>Assigned to your account</span></article>
+            <article class="stat-card"><small>Assessment records</small><strong id="doctorRecordCount">0</strong><span>Across assigned patients</span></article>
+            <article class="stat-card"><small>Most recent record</small><strong id="doctorLatestDate">—</strong><span id="doctorLatestYear">No records yet</span></article>
+          </div>
+          <div class="dashboard-grid">
+            <article class="panel">
+              <div class="panel-title"><h3>Recent assessment records</h3><button class="text-link" type="button" data-doctor-nav="records">View all</button></div>
+              <div class="table-wrap"><table class="doctor-table"><thead><tr><th>Assessment</th><th>Patient</th><th>Date</th><th>KL grade</th><th></th></tr></thead><tbody id="doctorRecentBody"></tbody></table></div>
+              <p class="doctor-intro-note">Records are loaded from the patients assigned to your doctor account.</p>
+            </article>
+            <article class="panel">
+              <div class="panel-title"><h3>Assigned patients</h3><button class="text-link" type="button" data-doctor-nav="patients">View all</button></div>
+              <div class="doctor-quick-list" id="doctorQuickPatients"></div>
+            </article>
+          </div>
+          <div class="safety-note"><strong>Review reminder:</strong> AI-generated grades and reports are decision-support outputs, not diagnoses. Review each report with the full clinical context.</div>
+        </section>
+
+        <!-- Assigned patients -->
+        <section class="workspace-page" id="doctorPatients">
+          <div class="workspace-heading"><div><div class="eyebrow">ASSIGNED PATIENTS</div><h1>Patients assigned to you</h1><p>Open a patient record to review their assessment history.</p></div><span class="sample-tag">Assigned accounts</span></div>
+          <div class="doctor-filter-row"><input class="doctor-search" id="doctorPatientSearch" type="search" placeholder="Search by patient ID or email" aria-label="Search assigned patients"></div>
+          <article class="panel">
+            <div class="panel-title"><h3>Patient list</h3><span class="muted" id="doctorPatientListCount" style="font-size:10px">0 assigned</span></div>
+            <div class="table-wrap"><table class="doctor-table"><thead><tr><th>Patient ID</th><th>Patient account</th><th>Assessments</th><th>Latest assessment</th><th>Latest grade</th><th></th></tr></thead><tbody id="doctorPatientsBody"></tbody></table></div>
+            <p class="doctor-intro-note">Patient names and additional demographics are not part of the current project data model; the prototype identifies accounts by user ID and registered email.</p>
+          </article>
+        </section>
+
+        <!-- Patient detail / assessment history -->
+        <section class="workspace-page" id="doctorPatientDetail">
+          <button class="text-link doctor-back" type="button" data-doctor-back="patients">← Back to assigned patients</button>
+          <div class="workspace-heading"><div><div class="eyebrow">PATIENT RECORD</div><h1 id="doctorPatientTitle">Assigned patient</h1><p id="doctorPatientEmail">Select a patient from your list.</p></div><span class="patient-id" id="doctorPatientBadge">Patient ID</span></div>
+          <div class="stat-grid">
+            <article class="stat-card"><small>Assessment records</small><strong id="doctorPatientRecordCount">0</strong><span>Saved records</span></article>
+            <article class="stat-card"><small>Latest KL grade</small><strong id="doctorPatientLatestGrade">—</strong><span>Most recent assessment</span></article>
+            <article class="stat-card"><small>Latest assessment</small><strong id="doctorPatientLatestDate">—</strong><span>Most recent date</span></article>
+          </div>
+          <article class="panel"><div class="panel-title"><h3>Assessment history</h3><span class="sample-tag">Saved records</span></div><div class="table-wrap"><table class="doctor-table"><thead><tr><th>Assessment ID</th><th>Date</th><th>KL grade</th><th>Confidence</th><th>Source</th><th></th></tr></thead><tbody id="doctorPatientRecordsBody"></tbody></table></div><p class="doctor-intro-note">Historical records contain assessment metadata and reports only. Original X-ray images and Grad-CAM heatmaps are not retained.</p></article>
+        </section>
+
+        <!-- All assigned-patient assessment records -->
+        <section class="workspace-page" id="doctorRecords">
+          <div class="workspace-heading"><div><div class="eyebrow">ASSESSMENT RECORDS</div><h1>Assessment history</h1><p>Browse records belonging to patients assigned to your account.</p></div><span class="sample-tag">Saved records</span></div>
+          <div class="doctor-filter-row">
+            <input class="doctor-search" id="doctorRecordSearch" type="search" placeholder="Search assessment ID or patient email" aria-label="Search assessment records">
+            <select class="doctor-select" id="doctorGradeFilter" aria-label="Filter by KL grade"><option value="all">All KL grades</option><option value="0">KL Grade 0</option><option value="1">KL Grade 1</option><option value="2">KL Grade 2</option><option value="3">KL Grade 3</option><option value="4">KL Grade 4</option></select>
+          </div>
+          <article class="panel"><div class="panel-title"><h3>All assigned-patient records</h3><span class="muted" id="doctorRecordListCount" style="font-size:10px">0 records</span></div><div class="table-wrap"><table class="doctor-table records"><thead><tr><th>Assessment ID</th><th>Patient</th><th>Date</th><th>KL grade</th><th>Confidence</th><th>Source</th><th></th></tr></thead><tbody id="doctorRecordsBody"></tbody></table></div><p class="doctor-intro-note">Confidence is uncalibrated and must not be interpreted as the probability that the predicted grade is correct.</p></article>
+        </section>
+
+        <!-- Clinician report details -->
+        <section class="workspace-page" id="doctorReport">
+          <button class="text-link doctor-back" id="doctorReportBack" type="button">← Back</button>
+          <div class="workspace-heading"><div><div class="eyebrow">CLINICIAN REPORT</div><h1 id="doctorReportTitle">Assessment report</h1><p id="doctorReportPatient">Select an authorized assessment.</p></div><span class="sample-tag">Assigned patient record</span></div>
+          <div class="report-metrics">
+            <article class="report-metric"><small>Predicted KL grade</small><strong id="doctorReportGrade">2 / 4</strong></article>
+            <article class="report-metric"><small>Model confidence score (uncalibrated)</small><strong id="doctorReportConfidence">—</strong></article>
+            <article class="report-metric"><small>Report source</small><strong id="doctorReportSource" style="font-size:16px">—</strong></article>
+          </div>
+          <article class="report-panel">
+            <div class="panel-title"><h3>Clinician-oriented summary</h3><span class="patient-id" id="doctorReportId">—</span></div>
+            <div class="report-placeholder" id="doctorClinicianText">Select an assigned-patient assessment to load its clinician report.</div>
+            <div class="report-disclaimer">AI-generated summary — not a diagnosis, confirm with a doctor.</div>
+          </article>
+          <div class="report-context"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span><strong>Record retention:</strong> The original X-ray and Grad-CAM heatmap are not stored. Historical report views contain assessment metadata and text reports only.</span></div>
+          <p class="doctor-intro-note">Only the backend-authorized clinician report is shown here. The patient portal never receives this field.</p>
+        </section>
+
+        <!-- Doctor account settings -->
+        <section class="workspace-page" id="doctorAccount">
+          <div class="workspace-heading"><div><div class="eyebrow">ACCOUNT SETTINGS</div><h1>Doctor account</h1><p>Review your account identity and access scope.</p></div></div>
+          <div class="account-grid">
+            <article class="panel"><div class="panel-title"><h3>Account information</h3></div><small class="muted">Registered email</small><div class="account-value" id="doctorAccountEmail">Not loaded</div><div style="margin-top:13px"><small class="muted">Account type</small><div class="account-value">Doctor</div></div></article>
+            <article class="panel"><div class="panel-title"><h3>Access permissions</h3></div><p class="report-text">Your account can view only patients assigned by the system administrator and their clinician-oriented assessment reports. You cannot self-assign patients or change account roles from this portal.</p><span class="sample-tag">Role: Doctor</span></article>
+          </div>
+        </section>
+      </main>
+    </div>
+  </section>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+  'use strict';
+
+  const $ = (selector, root = document) => root.querySelector(selector);
+  const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+  const API = '';
+  const pages = ['landingPage', 'onboardingPage', 'patientWorkspace', 'doctorWorkspace'];
+  const modals = ['authModal', 'registerModal', 'forgotModal'];
+
+  let selectedRole = 'Patient';
+  let currentUser = null;
+  let currentPatientView = 'dashboard';
+  let currentDoctorView = 'dashboard';
+  let patientHistory = [];
+  let doctorPatients = [];
+  let doctorRecords = [];
+  let selectedDoctorPatientId = null;
+  let selectedDoctorResultId = null;
+  let doctorReportReturnView = 'records';
+  let selectedFile = null;
+  let uploadInProgress = false;
+
+  function toast(message) {
+    const el = $('#toast');
+    el.textContent = message;
+    el.classList.add('show');
+    window.setTimeout(() => el.classList.remove('show'), 3200);
+  }
+
+  function setNotice(id, message, isError = true) {
+    const el = $('#' + id);
+    el.textContent = message;
+    el.classList.add('show');
+    el.style.background = isError ? '#f9e9e9' : 'var(--accent-2)';
+    el.style.color = isError ? '#8e3030' : 'var(--accent)';
+  }
+
+  function clearNotices() { $$('.notice').forEach(el => el.classList.remove('show')); }
+
+  function showPage(id) {
+    pages.forEach(pageId => $('#' + pageId).classList.toggle('active', pageId === id));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function openModal(id) { modals.forEach(mid => $('#' + mid).classList.toggle('open', mid === id)); }
+  function closeModals() { modals.forEach(mid => $('#' + mid).classList.remove('open')); }
+
+  function cookieValue(name) {
+    const prefix = name + '=';
+    const entry = document.cookie.split(';').map(part => part.trim()).find(part => part.startsWith(prefix));
+    return entry ? decodeURIComponent(entry.slice(prefix.length)) : null;
+  }
+
+  async function ensureCsrf() {
+    const response = await fetch(API + '/api/auth/csrf', { method: 'GET', credentials: 'same-origin', cache: 'no-store' });
+    if (!response.ok) throw new Error('Unable to initialize request protection. Refresh the page and try again.');
+    const body = await response.json();
+    const token = cookieValue(body.cookieName || 'XSRF-TOKEN');
+    if (!token) throw new Error('Security token was not set by the server. Refresh the page and try again.');
+    return { headerName: body.headerName || 'X-XSRF-TOKEN', token };
+  }
+
+  async function apiRequest(path, options = {}) {
+    const method = (options.method || 'GET').toUpperCase();
+    const headers = new Headers(options.headers || {});
+    if (!['GET', 'HEAD', 'OPTIONS'].includes(method) && options.csrf !== false) {
+      const csrf = await ensureCsrf();
+      headers.set(csrf.headerName, csrf.token);
+    }
+    if (options.json !== undefined) headers.set('Content-Type', 'application/json');
+    const response = await fetch(API + path, {
+      method,
+      headers,
+      body: options.json !== undefined ? JSON.stringify(options.json) : options.body,
+      credentials: 'same-origin',
+      cache: 'no-store'
+    });
+    const contentType = response.headers.get('content-type') || '';
+    let payload = null;
+    if (response.status !== 204) {
+      if (contentType.includes('application/json')) {
+        try { payload = await response.json(); } catch (_) { payload = null; }
+      } else {
+        try { payload = await response.text(); } catch (_) { payload = null; }
+      }
+    }
+    if (!response.ok) {
+      const code = payload && payload.error ? payload.error : 'request_failed';
+      const message = payload && payload.message ? payload.message : 'The request could not be completed.';
+      const error = new Error(message);
+      error.status = response.status;
+      error.code = code;
+      throw error;
+    }
+    return payload;
+  }
+
+  function friendlyError(error) {
+    if (error.code === 'invalid_credentials') return 'Email or password is incorrect.';
+    if (error.status === 401) return 'Your session has expired. Please sign in again.';
+    if (error.status === 403) return 'This action is not permitted for your account.';
+    if (error.status === 404) return 'The requested record could not be found.';
+    if (error.status === 413) return 'The image is too large. Choose a file no larger than 5 MB.';
+    if (error.status === 422 || error.code === 'invalid_input_image') return error.message || 'The image could not be processed. Choose a valid PNG or JPEG knee X-ray.';
+    if (error.status === 429 || error.code === 'rate_limited') return error.message || 'Prediction capacity is temporarily limited. Please retry shortly.';
+    if (error.status === 503 || error.code === 'model_unavailable') return 'The AI service is waking up. Please retry in a minute.';
+    return error.message || 'Something went wrong. Please try again.';
+  }
+
+  function dateParts(value) {
+    if (!value) return { short: '—', full: '—', year: '' };
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return { short: String(value), full: String(value), year: '' };
+    return {
+      short: new Intl.DateTimeFormat(undefined, { day: '2-digit', month: 'short' }).format(date),
+      full: new Intl.DateTimeFormat(undefined, { day: '2-digit', month: 'short', year: 'numeric' }).format(date),
+      year: new Intl.DateTimeFormat(undefined, { year: 'numeric' }).format(date)
+    };
+  }
+
+  function formatConfidence(value) {
+    const numeric = Number(value);
+    return Number.isFinite(numeric) ? (numeric * 100).toFixed(1) + '%' : '—';
+  }
+
+  function sourceLabel(source) {
+    return source === 'live' ? 'Live generation' : source === 'cached' ? 'Cached response' : 'Unknown';
+  }
+
+  function createCell(text, className) {
+    const td = document.createElement('td');
+    if (className) td.className = className;
+    td.textContent = text == null ? '—' : String(text);
+    return td;
+  }
+
+  function createButton(text, className, attributes = {}) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = className || 'doctor-action';
+    button.textContent = text;
+    Object.entries(attributes).forEach(([key, value]) => button.dataset[key] = String(value));
+    return button;
+  }
+
+  function gradePill(grade) {
+    const span = document.createElement('span');
+    span.className = 'grade-pill';
+    span.textContent = 'KL ' + grade;
+    return span;
+  }
+
+  function sourcePill(source) {
+    const span = document.createElement('span');
+    span.className = 'source-pill ' + (source === 'live' ? 'live' : 'cached');
+    span.textContent = sourceLabel(source);
+    return span;
+  }
+
+  function emptyRow(tbody, colspan, title, description) {
+    const tr = document.createElement('tr');
+    const td = document.createElement('td');
+    td.colSpan = colspan;
+    const box = document.createElement('div');
+    box.className = 'empty-state';
+    const h = document.createElement('h3'); h.textContent = title;
+    const p = document.createElement('p'); p.textContent = description;
+    box.append(h, p); td.append(box); tr.append(td); tbody.replaceChildren(tr);
+  }
+
+  function openLogin(role) {
+    selectedRole = role;
+    $('#authRole').textContent = role.toUpperCase() + ' PORTAL';
+    $('#authTitle').textContent = role + ' login';
+    $('#authDescription').textContent = role === 'Patient'
+      ? 'Sign in to upload X-rays, view your results and access your assessment history.'
+      : 'Sign in to access your assigned patients and clinician-oriented reports.';
+    $('#continueButtonLabel').textContent = role === 'Patient' ? 'Go to Patient Dashboard' : 'Go to Doctor Portal';
+    updateOnboardingForRole(role);
+    $('#registerPrompt').style.display = role === 'Patient' ? 'block' : 'none';
+    $('#forgotLink').style.visibility = role === 'Patient' ? 'visible' : 'hidden';
+    $('#loginForm').reset(); clearNotices(); openModal('authModal'); $('#loginEmail').focus();
+  }
+
+  function updateOnboardingForRole(role) {
+    const steps = $$('.workflow-card');
+    const sectionHeading = $$('.content-section .section-title h2')[0];
+    const sectionNote = $$('.content-section .section-title p')[0];
+    if (role === 'Doctor') {
+      $('#welcomeDescription').textContent = 'Review assigned-patient assessments and clinician-oriented reports. Access is restricted to patients linked to your doctor account.';
+      if (sectionHeading) sectionHeading.textContent = 'From assigned patient to clinician report';
+      if (sectionNote) sectionNote.textContent = 'The original X-ray and historical Grad-CAM heatmap are not retained.';
+      const items = [
+        ['Open assigned patients', 'View only patient accounts assigned by the system administrator.'],
+        ['Select an assessment', 'Review its KL grade, uncalibrated confidence score, date and source.'],
+        ['Review the clinician report', 'Read the clinician-oriented report for an assessment you are authorized to access.']
+      ];
+      steps.forEach((step, index) => { if (items[index]) { step.querySelector('h3').textContent = items[index][0]; step.querySelector('p').textContent = items[index][1]; } });
+      $('#onboardingActionsNote').textContent = 'Continue to your assigned-patient workspace.';
+    } else {
+      $('#welcomeDescription').textContent = 'Upload a knee X-ray, review the assessment response and revisit saved assessment history.';
+      if (sectionHeading) sectionHeading.textContent = 'From X-ray to assessment summary';
+      if (sectionNote) sectionNote.textContent = 'The portal is connected to the backend. During development, results may be simulated until the real ML service is enabled.';
+      const items = [
+        ['Submit a knee X-ray', 'Select a PNG or JPEG image. The backend validates the file and enforces the upload limit.'],
+        ['Receive an assessment', 'The backend requests a prediction and saves the grade, confidence and reports after a valid response.'],
+        ['Review the result', 'See the patient report and immediate heatmap, then revisit saved metadata and reports in history.']
+      ];
+      steps.forEach((step, index) => { if (items[index]) { step.querySelector('h3').textContent = items[index][0]; step.querySelector('p').textContent = items[index][1]; } });
+      $('#onboardingActionsNote').textContent = 'Continue to your patient workspace.';
+    }
+  }
+
+  function beginSession(user) {
+    currentUser = user;
+    const role = user.role;
+    selectedRole = role === 'DOCTOR' ? 'Doctor' : 'Patient';
+    closeModals(); clearNotices();
+    const email = user.email || '';
+    $('#welcomeIdentity').textContent = email;
+    $('#welcomeAvatar').textContent = (email.trim()[0] || selectedRole[0]).toUpperCase();
+    $('#welcomeRole').textContent = selectedRole.toUpperCase() + ' PORTAL';
+    $('#welcomeTitle').textContent = 'Welcome to KneeSense';
+    updateOnboardingForRole(selectedRole);
+    if (role === 'PATIENT') {
+      $('#patientEmailTop').textContent = email;
+      $('#patientAvatar').textContent = (email.trim()[0] || 'P').toUpperCase();
+      $('#accountEmail').textContent = email;
+      showPage('onboardingPage');
+    } else if (role === 'DOCTOR') {
+      $('#doctorEmailTop').textContent = email;
+      $('#doctorAccountEmail').textContent = email;
+      showPage('onboardingPage');
+    } else {
+      throw new Error('This portal is available only to patient and doctor accounts.');
+    }
+  }
+
+  async function refreshCurrentUser() {
+    const user = await apiRequest('/api/me');
+    if (!user || !['PATIENT', 'DOCTOR'].includes(user.role)) throw new Error('This portal is available only to patient and doctor accounts.');
+    return user;
+  }
+
+  async function handleLogin(event) {
+    event.preventDefault(); clearNotices();
+    const email = $('#loginEmail').value.trim();
+    const password = $('#loginPassword').value;
+    if (!email || !password) return;
+    const submit = $('#loginForm button[type="submit"]');
+    submit.disabled = true;
+    try {
+      const loginUser = await apiRequest('/api/auth/login', { method: 'POST', csrf: false, json: { email, password } });
+      await ensureCsrf();
+      const user = await refreshCurrentUser();
+      if (user.role !== loginUser.role || user.email.toLowerCase() !== loginUser.email.toLowerCase()) throw new Error('The authenticated account could not be verified.');
+      const expectedRole = selectedRole === 'Doctor' ? 'DOCTOR' : 'PATIENT';
+      if (user.role !== expectedRole) {
+        await apiRequest('/api/auth/logout', { method: 'POST' }).catch(() => {});
+        throw new Error('This account belongs to the ' + user.role.toLowerCase() + ' portal. Choose the correct portal and sign in again.');
+      }
+      $('#loginPassword').value = '';
+      beginSession(user);
+    } catch (error) {
+      setNotice('loginNotice', friendlyError(error));
+    } finally { submit.disabled = false; }
+  }
+
+  async function handleRegister(event) {
+    event.preventDefault(); clearNotices();
+    const email = $('#registerEmail').value.trim();
+    const password = $('#registerPassword').value;
+    const confirm = $('#confirmPassword').value;
+    if (password.length < 8) { setNotice('registerNotice', 'Use a password with at least 8 characters.'); return; }
+    if (new TextEncoder().encode(password).length > 72) { setNotice('registerNotice', 'Password must not exceed 72 UTF-8 bytes.'); return; }
+    if (password !== confirm) { setNotice('registerNotice', 'The passwords do not match.'); return; }
+    const submit = $('#registerForm button[type="submit"]'); submit.disabled = true;
+    try {
+      await apiRequest('/api/auth/signup', { method: 'POST', csrf: false, json: { email, password } });
+      $('#registerForm').reset(); closeModals(); openLogin('Patient');
+      setNotice('loginNotice', 'Patient account created. Sign in with your new credentials.', false);
+    } catch (error) { setNotice('registerNotice', friendlyError(error)); }
+    finally { submit.disabled = false; }
+  }
+
+  async function logout() {
+    try { await apiRequest('/api/auth/logout', { method: 'POST' }); }
+    catch (error) { toast('Sign-out request failed: ' + friendlyError(error)); return; }
+    currentUser = null; patientHistory = []; doctorPatients = []; doctorRecords = []; selectedFile = null;
+    $('#xrayFile').value = ''; $('#uploadStatus').textContent = 'No file selected.'; $('#submitAssessment').disabled = true;
+    closeModals(); showPage('landingPage'); toast('You have signed out.');
+  }
+
+  function showPatientView(view) {
+    currentPatientView = view;
+    const map = { dashboard: 'patientDashboard', upload: 'patientUpload', result: 'patientResult', history: 'patientHistory', account: 'patientAccount' };
+    Object.entries(map).forEach(([key, id]) => $('#' + id).classList.toggle('active', key === view));
+    $$('[data-patient-view]').forEach(button => button.classList.toggle('active', button.dataset.patientView === view));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (view === 'dashboard') loadPatientDashboard().catch(error => toast(friendlyError(error)));
+    if (view === 'history') loadPatientHistory().catch(error => toast(friendlyError(error)));
+  }
+
+  function renderPatientDashboard() {
+    const list = patientHistory;
+    $('#patientAssessmentCount').textContent = String(list.length);
+    const latest = list[0];
+    $('#patientLatestGrade').textContent = latest ? latest.klGrade + ' / 4' : '—';
+    $('#patientLatestGradeCard').replaceChildren(document.createTextNode(latest ? String(latest.klGrade) + ' ' : '— '), (() => { const small = document.createElement('small'); small.textContent = '/ 4'; return small; })());
+    const date = latest ? dateParts(latest.createdAt) : null;
+    $('#patientLatestDate').textContent = date ? date.short : '—';
+    $('#patientLatestDateYear').textContent = date ? date.year : 'No assessments yet';
+    $('#patientLatestMeta').textContent = latest ? date.full + ' · ' + formatConfidence(latest.confidence) + ' uncalibrated model confidence' : 'Upload a knee X-ray to begin.';
+    $('#patientLatestTag').textContent = latest ? (latest.source === 'live' ? 'Live response' : 'Cached response') : 'No records';
+    $('#patientLatestView').disabled = !latest;
+    $('#patientLatestView').onclick = latest ? () => openPatientAssessment(latest.resultId, false) : null;
+    const activity = $('#patientRecentActivity');
+    activity.replaceChildren();
+    if (!list.length) {
+      const empty = document.createElement('div'); empty.className = 'empty-state';
+      const h = document.createElement('h3'); h.textContent = 'No assessments yet';
+      const p = document.createElement('p'); p.textContent = 'Your saved assessments will appear here after a successful upload.';
+      empty.append(h, p); activity.append(empty); return;
+    }
+    list.slice(0, 4).forEach(item => {
+      const row = document.createElement('div'); row.className = 'activity-row';
+      const d = document.createElement('span'); d.className = 'activity-date'; d.textContent = dateParts(item.createdAt).short;
+      const id = document.createElement('span'); id.className = 'activity-id'; id.textContent = 'Assessment #' + item.resultId;
+      row.append(d, id, gradePill(item.klGrade));
+      row.setAttribute('role', 'button'); row.tabIndex = 0;
+      row.addEventListener('click', () => openPatientAssessment(item.resultId, false));
+      row.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openPatientAssessment(item.resultId, false); } });
+      activity.append(row);
+    });
+  }
+
+  async function loadPatientDashboard() {
+    patientHistory = await apiRequest('/api/assessments');
+    if (!Array.isArray(patientHistory)) patientHistory = [];
+    renderPatientDashboard();
+  }
+
+  function renderPatientHistory() {
+    const body = $('#patientHistoryBody'); body.replaceChildren();
+    if (!patientHistory.length) { emptyRow(body, 6, 'No assessments yet', 'Your successful assessment uploads will appear here.'); return; }
+    patientHistory.forEach(item => {
+      const tr = document.createElement('tr');
+      tr.append(createCell('Assessment #' + item.resultId), createCell(dateParts(item.createdAt).full));
+      const grade = document.createElement('td'); grade.append(gradePill(item.klGrade)); tr.append(grade);
+      tr.append(createCell(formatConfidence(item.confidence)), createCell(sourceLabel(item.source)));
+      const action = document.createElement('td'); action.append(createButton('View', 'text-link', { patientResult: item.resultId })); tr.append(action);
+      body.append(tr);
+    });
+  }
+
+  async function loadPatientHistory() {
+    patientHistory = await apiRequest('/api/assessments');
+    if (!Array.isArray(patientHistory)) patientHistory = [];
+    renderPatientHistory();
+  }
+
+  function showPatientResult(data, heatmapBase64, immediate) {
+    $('#patientResultEyebrow').textContent = 'ASSESSMENT #' + data.resultId;
+    $('#patientResultTitle').textContent = 'Assessment result';
+    $('#patientResultSubtitle').textContent = dateParts(data.createdAt).full + ' · Saved to your account';
+    const simulated = /mock result|no model inference|demonstration response/i.test(data.patientReport || '');
+    $('#patientResultSource').textContent = simulated ? 'SIMULATED MOCK' : sourceLabel(data.source);
+    $('#patientResultGrade').textContent = String(data.klGrade);
+    $('#patientResultConfidence').textContent = formatConfidence(data.confidence);
+    $('#patientConfidenceBar').style.width = Math.max(0, Math.min(100, Number(data.confidence) * 100)) + '%';
+    $('#patientReportText').textContent = data.patientReport || 'No patient report was returned.';
+    const image = $('#patientHeatmapImage');
+    const unavailable = $('#patientHeatmapUnavailable');
+    if (immediate && heatmapBase64) {
+      image.src = 'data:image/png;base64,' + heatmapBase64;
+      image.style.display = 'block'; unavailable.style.display = 'none';
+      $('#patientHeatmapNote').textContent = 'This heatmap is provided only in the immediate response and is not retained in assessment history.';
+    } else {
+      image.removeAttribute('src'); image.style.display = 'none'; unavailable.style.display = 'block';
+      $('#patientHeatmapNote').textContent = 'A heatmap is an explanation aid, not a precise localisation of disease.';
+    }
+    showPatientView('result');
+  }
+
+  async function openPatientAssessment(resultId, immediate = false, uploadData = null) {
+    try {
+      const detail = uploadData || await apiRequest('/api/assessments/' + encodeURIComponent(resultId));
+      showPatientResult(detail, immediate && uploadData ? uploadData.heatmapBase64 : null, immediate);
+    } catch (error) { toast(friendlyError(error)); }
+  }
+
+  function validateFile(file) {
+    if (!file) return 'Choose a PNG or JPEG image first.';
+    if (!['image/jpeg', 'image/png'].includes(file.type)) return 'Unsupported file type. Choose a JPG or PNG image.';
+    if (file.size <= 0) return 'The selected file is empty.';
+    if (file.size > 5 * 1024 * 1024) return 'File is larger than 5 MB. Choose a smaller image.';
+    return null;
+  }
+
+  function handleSelectedFile(file) {
+    selectedFile = file || null;
+    const status = $('#uploadStatus');
+    status.classList.remove('error', 'success');
+    if (!file) {
+      status.textContent = 'No file selected.'; $('#submitAssessment').disabled = true; return;
+    }
+    const error = validateFile(file);
+    if (error) {
+      status.textContent = error; status.classList.add('error'); selectedFile = null; $('#xrayFile').value = ''; $('#submitAssessment').disabled = true; return;
+    }
+    status.textContent = 'Selected: ' + file.name + ' (' + (file.size / 1024 / 1024).toFixed(2) + ' MB). Ready to upload.';
+    $('#submitAssessment').disabled = false;
+  }
+
+  async function submitAssessment() {
+    if (uploadInProgress || !selectedFile) return;
+    const validationError = validateFile(selectedFile);
+    if (validationError) { handleSelectedFile(null); $('#uploadStatus').textContent = validationError; $('#uploadStatus').classList.add('error'); return; }
+    uploadInProgress = true;
+    const button = $('#submitAssessment'); const status = $('#uploadStatus');
+    button.disabled = true; button.textContent = 'Uploading…'; status.classList.remove('error', 'success');
+    status.textContent = 'Uploading image and requesting assessment…';
+    try {
+      const form = new FormData(); form.append('file', selectedFile, selectedFile.name);
+      const response = await apiRequest('/api/assessments', { method: 'POST', body: form });
+      status.textContent = 'Assessment saved successfully. The original image was not retained.'; status.classList.add('success');
+      selectedFile = null; $('#xrayFile').value = '';
+      patientHistory = await apiRequest('/api/assessments');
+      renderPatientDashboard();
+      showPatientResult(response, response.heatmapBase64, true);
+      toast('Assessment #' + response.resultId + ' saved.');
+    } catch (error) {
+      status.textContent = friendlyError(error); status.classList.add('error');
+      if (error.status === 401) { currentUser = null; }
+    } finally {
+      uploadInProgress = false; button.disabled = !selectedFile; button.textContent = 'Upload and assess →';
+    }
+  }
+
+  function showDoctorView(view) {
+    currentDoctorView = view;
+    const map = { dashboard: 'doctorDashboard', patients: 'doctorPatients', patientDetail: 'doctorPatientDetail', records: 'doctorRecords', report: 'doctorReport', account: 'doctorAccount' };
+    Object.entries(map).forEach(([key, id]) => $('#' + id).classList.toggle('active', key === view));
+    const activeNav = view === 'patientDetail' ? 'patients' : view === 'report' ? (doctorReportReturnView === 'patientDetail' ? 'patients' : doctorReportReturnView) : view;
+    $$('[data-doctor-view]').forEach(button => button.classList.toggle('active', button.dataset.doctorView === activeNav));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function sortedDoctorRecords() {
+    return [...doctorRecords].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  }
+
+  async function loadDoctorWorkspace() {
+    doctorPatients = await apiRequest('/api/doctor/patients');
+    if (!Array.isArray(doctorPatients)) doctorPatients = [];
+    const historyLists = await Promise.all(doctorPatients.map(async patient => {
+      try {
+        const rows = await apiRequest('/api/doctor/patients/' + encodeURIComponent(patient.patientId) + '/assessments');
+        return (Array.isArray(rows) ? rows : []).map(record => ({ ...record, patientId: patient.patientId, patientEmail: patient.patientEmail }));
+      } catch (error) {
+        console.error('Could not load assessment history for assigned patient', patient.patientId, error);
+        return [];
+      }
+    }));
+    doctorRecords = historyLists.flat();
+    renderDoctorDashboard(); renderDoctorPatients(); renderDoctorRecords();
+  }
+
+  function renderDoctorDashboard() {
+    const records = sortedDoctorRecords();
+    $('#doctorPatientCount').textContent = String(doctorPatients.length);
+    $('#doctorRecordCount').textContent = String(records.length);
+    const latest = records[0];
+    $('#doctorLatestDate').textContent = latest ? dateParts(latest.createdAt).short : '—';
+    $('#doctorLatestYear').textContent = latest ? dateParts(latest.createdAt).year : 'No records yet';
+    const recentBody = $('#doctorRecentBody'); recentBody.replaceChildren();
+    if (!records.length) emptyRow(recentBody, 5, 'No assessment records yet', 'Records will appear when assigned patients complete an assessment.');
+    records.slice(0, 5).forEach(record => {
+      const tr = document.createElement('tr');
+      tr.append(createCell('Assessment #' + record.resultId), createCell(record.patientEmail), createCell(dateParts(record.createdAt).full));
+      const g = document.createElement('td'); g.append(gradePill(record.klGrade)); tr.append(g);
+      const action = document.createElement('td'); action.append(createButton('View report →', 'doctor-action', { doctorReport: record.resultId, patientId: record.patientId, doctorReportOrigin: 'dashboard' })); tr.append(action);
+      recentBody.append(tr);
+    });
+    const quick = $('#doctorQuickPatients'); quick.replaceChildren();
+    if (!doctorPatients.length) {
+      const empty = document.createElement('div'); empty.className = 'empty-state';
+      const h = document.createElement('h3'); h.textContent = 'No assigned patients';
+      const p = document.createElement('p'); p.textContent = 'Ask the system administrator to assign patients to your doctor account.';
+      empty.append(h, p); quick.append(empty);
+    } else doctorPatients.slice(0, 4).forEach(patient => {
+      const item = document.createElement('div'); item.className = 'doctor-quick-row';
+      const avatar = document.createElement('span'); avatar.className = 'doctor-avatar'; avatar.textContent = String(patient.patientId).slice(-2);
+      const copy = document.createElement('div'); copy.className = 'doctor-quick-copy';
+      const strong = document.createElement('strong'); strong.textContent = 'Patient #' + patient.patientId;
+      const small = document.createElement('small'); small.textContent = patient.patientEmail;
+      copy.append(strong, small);
+      item.append(avatar, copy, createButton('Open →', 'doctor-action', { doctorPatient: patient.patientId })); quick.append(item);
+    });
+  }
+
+  function renderDoctorPatients(query = $('#doctorPatientSearch').value) {
+    const q = String(query || '').trim().toLowerCase();
+    const matches = doctorPatients.filter(patient => ('patient ' + patient.patientId + ' ' + patient.patientEmail).toLowerCase().includes(q));
+    $('#doctorPatientListCount').textContent = matches.length + ' shown · ' + doctorPatients.length + ' assigned';
+    const body = $('#doctorPatientsBody'); body.replaceChildren();
+    if (!matches.length) { emptyRow(body, 6, 'No matching assigned patients', q ? 'Try another patient ID or email.' : 'No patients have been assigned to your account.'); return; }
+    matches.forEach(patient => {
+      const records = doctorRecords.filter(record => record.patientId === patient.patientId).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      const latest = records[0]; const tr = document.createElement('tr');
+      tr.append(createCell(patient.patientId));
+      const account = document.createElement('td'); const wrap = document.createElement('div'); wrap.className = 'patient-account';
+      const strong = document.createElement('strong'); strong.textContent = 'Patient #' + patient.patientId;
+      const small = document.createElement('small'); small.textContent = patient.patientEmail;
+      wrap.append(strong, small); account.append(wrap); tr.append(account);
+      tr.append(createCell(records.length), createCell(latest ? dateParts(latest.createdAt).full : '—'));
+      const grade = document.createElement('td'); if (latest) grade.append(gradePill(latest.klGrade)); else grade.textContent = '—'; tr.append(grade);
+      const action = document.createElement('td'); action.append(createButton('View patient →', 'doctor-action', { doctorPatient: patient.patientId })); tr.append(action);
+      body.append(tr);
+    });
+  }
+
+  function renderDoctorRecords() {
+    const q = $('#doctorRecordSearch').value.trim().toLowerCase();
+    const grade = $('#doctorGradeFilter').value;
+    const matches = sortedDoctorRecords().filter(record => {
+      const text = ('assessment ' + record.resultId + ' patient ' + record.patientId + ' ' + record.patientEmail).toLowerCase();
+      return text.includes(q) && (grade === 'all' || String(record.klGrade) === grade);
+    });
+    $('#doctorRecordListCount').textContent = matches.length + ' record' + (matches.length === 1 ? '' : 's');
+    const body = $('#doctorRecordsBody'); body.replaceChildren();
+    if (!matches.length) { emptyRow(body, 7, 'No matching assessment records', 'Change the search text or KL grade filter.'); return; }
+    matches.forEach(record => {
+      const tr = document.createElement('tr');
+      tr.append(createCell('Assessment #' + record.resultId), createCell(record.patientEmail), createCell(dateParts(record.createdAt).full));
+      const g = document.createElement('td'); g.append(gradePill(record.klGrade)); tr.append(g);
+      tr.append(createCell(formatConfidence(record.confidence)));
+      const src = document.createElement('td'); src.append(sourcePill(record.source)); tr.append(src);
+      const action = document.createElement('td'); action.append(createButton('View report →', 'doctor-action', { doctorReport: record.resultId, patientId: record.patientId, doctorReportOrigin: 'records' })); tr.append(action);
+      body.append(tr);
+    });
+  }
+
+  async function openDoctorPatient(patientId) {
+    const patient = doctorPatients.find(item => Number(item.patientId) === Number(patientId));
+    if (!patient) { toast('This patient is not in your assigned-patient list.'); return; }
+    selectedDoctorPatientId = Number(patient.patientId);
+    const records = sortedDoctorRecords().filter(record => record.patientId === selectedDoctorPatientId);
+    const latest = records[0];
+    $('#doctorPatientTitle').textContent = 'Patient #' + patient.patientId;
+    $('#doctorPatientEmail').textContent = patient.patientEmail;
+    $('#doctorPatientBadge').textContent = 'PT-' + String(patient.patientId).padStart(4, '0');
+    $('#doctorPatientRecordCount').textContent = String(records.length);
+    $('#doctorPatientLatestGrade').textContent = latest ? latest.klGrade + ' / 4' : '—';
+    $('#doctorPatientLatestDate').textContent = latest ? dateParts(latest.createdAt).short : '—';
+    const body = $('#doctorPatientRecordsBody'); body.replaceChildren();
+    if (!records.length) emptyRow(body, 6, 'No assessment records', 'This assigned patient has not completed an assessment.');
+    records.forEach(record => {
+      const tr = document.createElement('tr');
+      tr.append(createCell('Assessment #' + record.resultId), createCell(dateParts(record.createdAt).full));
+      const g = document.createElement('td'); g.append(gradePill(record.klGrade)); tr.append(g);
+      tr.append(createCell(formatConfidence(record.confidence)));
+      const src = document.createElement('td'); src.append(sourcePill(record.source)); tr.append(src);
+      const action = document.createElement('td'); action.append(createButton('View report →', 'doctor-action', { doctorReport: record.resultId, patientId: record.patientId, doctorReportOrigin: 'patientDetail' })); tr.append(action);
+      body.append(tr);
+    });
+    showDoctorView('patientDetail');
+  }
+
+  async function openDoctorReport(patientId, resultId, origin = 'records') {
+    if (!doctorPatients.some(item => Number(item.patientId) === Number(patientId))) { toast('This patient is not assigned to your account.'); return; }
+    try {
+      const detail = await apiRequest('/api/doctor/patients/' + encodeURIComponent(patientId) + '/assessments/' + encodeURIComponent(resultId));
+      selectedDoctorPatientId = Number(patientId); selectedDoctorResultId = Number(resultId); doctorReportReturnView = origin;
+      $('#doctorReportTitle').textContent = 'Assessment #' + detail.resultId;
+      $('#doctorReportPatient').textContent = 'Patient #' + detail.patientId + ' · ' + detail.patientEmail + ' · ' + dateParts(detail.createdAt).full;
+      $('#doctorReportGrade').textContent = detail.klGrade + ' / 4';
+      $('#doctorReportConfidence').textContent = formatConfidence(detail.confidence);
+      $('#doctorReportSource').textContent = sourceLabel(detail.source);
+      $('#doctorReportId').textContent = 'Assessment #' + detail.resultId;
+      $('#doctorClinicianText').textContent = detail.clinicianReport || 'No clinician report was returned.';
+      $('#doctorReportBack').textContent = origin === 'patientDetail' ? '← Back to patient record' : origin === 'dashboard' ? '← Back to dashboard' : '← Back to assessment records';
+      showDoctorView('report');
+    } catch (error) { toast(friendlyError(error)); }
+  }
+
+  async function bootstrap() {
+    try {
+      await ensureCsrf();
+      const user = await refreshCurrentUser();
+      beginSession(user);
+    } catch (error) {
+      showPage('landingPage');
+    }
+  }
+
+  // Login / registration / modal wiring.
+  $$('[data-login-role]').forEach(button => button.addEventListener('click', () => openLogin(button.dataset.loginRole)));
+  $('#closeAuth').addEventListener('click', closeModals);
+  $('#closeRegister').addEventListener('click', closeModals);
+  $('#closeForgot').addEventListener('click', closeModals);
+  modals.forEach(id => $('#' + id).addEventListener('click', event => { if (event.target.id === id) closeModals(); }));
+  document.addEventListener('keydown', event => { if (event.key === 'Escape') closeModals(); });
+  $('#loginForm').addEventListener('submit', handleLogin);
+  $('#registerLink').addEventListener('click', () => { clearNotices(); $('#registerForm').reset(); openModal('registerModal'); });
+  $('#backToLogin').addEventListener('click', () => openModal('authModal'));
+  $('#registerForm').addEventListener('submit', handleRegister);
+  $('#forgotLink').addEventListener('click', () => { clearNotices(); $('#forgotForm').reset(); openModal('forgotModal'); });
+  $('#forgotBack').addEventListener('click', () => openModal('authModal'));
+  $('#forgotForm').addEventListener('submit', event => { event.preventDefault(); setNotice('forgotNotice', 'Password recovery is not connected to a backend service. Contact the system administrator.', true); });
+
+  $('#onboardingLogout').addEventListener('click', logout);
+  $('#patientLogout').addEventListener('click', logout);
+  $('#doctorLogout').addEventListener('click', logout);
+  $('#continueToWorkspace').addEventListener('click', async () => {
+    if (!currentUser) return;
+    if (currentUser.role === 'PATIENT') { showPage('patientWorkspace'); showPatientView('dashboard'); }
+    else { showPage('doctorWorkspace'); showDoctorView('dashboard'); await loadDoctorWorkspace().catch(error => toast(friendlyError(error))); }
+  });
+
+  // Patient workspace navigation and data actions.
+  $$('[data-patient-view]').forEach(button => button.addEventListener('click', () => showPatientView(button.dataset.patientView)));
+  $$('[data-open-patient-view]').forEach(button => button.addEventListener('click', () => showPatientView(button.dataset.openPatientView)));
+  $('#patientHistoryBody').addEventListener('click', event => {
+    const button = event.target.closest('[data-patient-result]');
+    if (button) openPatientAssessment(button.dataset.patientResult, false);
+  });
+  $('#submitAssessment').addEventListener('click', submitAssessment);
+  const fileInput = $('#xrayFile');
+  const uploadBox = $('.upload-box');
+  fileInput.addEventListener('change', () => handleSelectedFile(fileInput.files && fileInput.files[0]));
+  ['dragenter', 'dragover'].forEach(type => uploadBox.addEventListener(type, event => { event.preventDefault(); event.stopPropagation(); uploadBox.classList.add('dragover'); }));
+  ['dragleave', 'dragend'].forEach(type => uploadBox.addEventListener(type, event => { event.preventDefault(); event.stopPropagation(); uploadBox.classList.remove('dragover'); }));
+  uploadBox.addEventListener('drop', event => {
+    event.preventDefault(); event.stopPropagation(); uploadBox.classList.remove('dragover');
+    const file = event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0];
+    if (!file) return;
+    try { const transfer = new DataTransfer(); transfer.items.add(file); fileInput.files = transfer.files; } catch (_) { }
+    handleSelectedFile(file);
+  });
+  uploadBox.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); fileInput.click(); } });
+  $('#clearUpload').addEventListener('click', () => { selectedFile = null; fileInput.value = ''; handleSelectedFile(null); });
+    $('#deleteDemoData').addEventListener('click', async () => {
+    const button = $('#deleteDemoData');
+    if (!currentUser || button.disabled) return;
+
+    const confirmed = window.confirm(
+      'Permanently delete your KneeSense account and its associated assessment records? This action cannot be undone.'
+    );
+    if (!confirmed) return;
+
+    button.disabled = true;
+    button.textContent = 'Deleting account...';
+    try {
+      await apiRequest('/api/me', { method: 'DELETE' });
+
+      currentUser = null;
+      patientHistory = [];
+      doctorPatients = [];
+      doctorRecords = [];
+      selectedDoctorPatientId = null;
+      selectedDoctorResultId = null;
+      selectedFile = null;
+      $('#xrayFile').value = '';
+      $('#uploadStatus').textContent = 'No file selected.';
+      $('#submitAssessment').disabled = true;
+
+      closeModals();
+      showPage('landingPage');
+      toast('Your account and associated assessment records have been deleted.');
+    } catch (error) {
+      toast(friendlyError(error));
+    } finally {
+      button.disabled = false;
+      button.textContent = 'Delete my account';
+    }
+  });
+
+  // Doctor workspace navigation and filtering.
+  $$('[data-doctor-view]').forEach(button => button.addEventListener('click', () => showDoctorView(button.dataset.doctorView)));
+  $$('[data-doctor-nav]').forEach(button => button.addEventListener('click', () => showDoctorView(button.dataset.doctorNav)));
+  $('#doctorPatientSearch').addEventListener('input', event => renderDoctorPatients(event.target.value));
+  $('#doctorRecordSearch').addEventListener('input', renderDoctorRecords);
+  $('#doctorGradeFilter').addEventListener('change', renderDoctorRecords);
+  $('#doctorWorkspace').addEventListener('click', event => {
+    const patientButton = event.target.closest('[data-doctor-patient]');
+    if (patientButton) { openDoctorPatient(patientButton.dataset.doctorPatient); return; }
+    const reportButton = event.target.closest('[data-doctor-report]');
+    if (reportButton) { openDoctorReport(reportButton.dataset.patientId, reportButton.dataset.doctorReport, reportButton.dataset.doctorReportOrigin || 'records'); return; }
+    const backButton = event.target.closest('[data-doctor-back]');
+    if (backButton) { showDoctorView(backButton.dataset.doctorBack); return; }
+  });
+  $('#doctorReportBack').addEventListener('click', () => showDoctorView(doctorReportReturnView));
+
+  // The authenticated session is restored only from the HttpOnly server cookie.
+  bootstrap();
+})();
+</script>
+</body>
+</html>

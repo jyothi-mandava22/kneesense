@@ -1,0 +1,113 @@
+name: kneesense
+
+services:
+
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+
+    environment:
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD is required}"
+      MYSQL_DATABASE: "${MYSQL_DATABASE:?MYSQL_DATABASE is required}"
+      MYSQL_USER: "${MYSQL_USER:?MYSQL_USER is required}"
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD:?MYSQL_PASSWORD is required}"
+
+    ports:
+      - "127.0.0.1:3307:3306"
+
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./backend-java/db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - 'mysqladmin ping --host=127.0.0.1 --user=root --password="$${MYSQL_ROOT_PASSWORD}" --silent'
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+    networks:
+      - kneesense-net
+
+  ml-service:
+    build:
+      context: ./ml-service
+    restart: unless-stopped
+
+    env_file:
+      - ./ml-service/.env
+
+    ports:
+      - "127.0.0.1:8000:8000"
+
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; r = urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3); raise SystemExit(0 if r.status == 200 else 1)"
+      interval: 15s
+      timeout: 5s
+      retries: 15
+      start_period: 180s
+
+    networks:
+      - kneesense-net
+
+  backend-java:
+    build:
+      context: ./backend-java
+      dockerfile: Dockerfile
+    restart: unless-stopped
+
+    environment:
+      SERVER_PORT: "8080"
+
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/${MYSQL_DATABASE:?MYSQL_DATABASE is required}"
+      SPRING_DATASOURCE_USERNAME: "${MYSQL_USER:?MYSQL_USER is required}"
+      SPRING_DATASOURCE_PASSWORD: "${MYSQL_PASSWORD:?MYSQL_PASSWORD is required}"
+
+      JWT_SECRET: "${JWT_SECRET:?JWT_SECRET is required}"
+      JWT_EXPIRATION_MS: "${JWT_EXPIRATION_MS:-43200000}"
+
+      ADMIN_EMAIL: "${ADMIN_EMAIL:-}"
+      ADMIN_PASSWORD: "${ADMIN_PASSWORD:-}"
+
+      COOKIE_SECURE: "false"
+
+      ML_CLIENT_MODE: "http"
+      ML_SERVICE_URL: "http://ml-service:8000"
+      ML_SERVICE_SECRET: "${ML_SERVICE_SECRET:?ML_SERVICE_SECRET is required}"
+      ML_TIMEOUT_MS: "90000"
+
+    ports:
+      - "127.0.0.1:8080:8080"
+
+    depends_on:
+      mysql:
+        condition: service_healthy
+      ml-service:
+        condition: service_healthy
+
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - 'curl --fail --silent http://127.0.0.1:8080/api/health >/dev/null || exit 1'
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+    networks:
+      - kneesense-net
+
+volumes:
+  mysql-data:
+    external: true
+    name: kneesense-mysql-data
+
+networks:
+  kneesense-net:
+    driver: bridge
