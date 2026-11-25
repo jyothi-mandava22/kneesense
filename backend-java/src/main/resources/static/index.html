@@ -430,7 +430,7 @@ button:disabled{opacity:.55;cursor:not-allowed;transform:none!important;box-shad
         <section class="workspace-page" id="patientUpload">
           <div class="workspace-heading"><div><div class="eyebrow">NEW ASSESSMENT</div><h1>Upload a knee X-ray</h1><p>Submit a PNG or JPEG image for assessment.</p></div></div>
           <article class="panel">
-            <div class="panel-title"><h3>Select an X-ray image</h3><span class="sample-tag">Backend connected</span></div>
+            <div class="panel-title"><h3>Select an X-ray image</h3></div>
             <label class="upload-box" for="xrayFile" tabindex="0" aria-label="Choose or drop a knee X-ray image"><div class="upload-symbol" aria-hidden="true">⇧</div><h3>Drag and drop or browse files</h3><p>PNG or JPEG · Maximum file size: 5 MB</p><input id="xrayFile" type="file" accept="image/png,image/jpeg,.jpg,.jpeg,.png" hidden></label>
             <div class="upload-status" id="uploadStatus" aria-live="polite">No file selected.</div>
             <div class="upload-actions"><button class="btn" id="submitAssessment" type="button" disabled>Upload and assess →</button><button class="btn outline" id="clearUpload" type="button">Clear selection</button></div>
@@ -496,7 +496,6 @@ button:disabled{opacity:.55;cursor:not-allowed;transform:none!important;box-shad
             <article class="panel">
               <div class="panel-title"><h3>Assigned patients</h3><button class="text-link" type="button" data-doctor-nav="patients">View all</button></div>
               <div class="doctor-quick-list" id="doctorQuickPatients"></div>
-              <p class="doctor-access-note">The backend enforces patient assignment on each protected request.</p>
             </article>
           </div>
           <div class="safety-note"><strong>Review reminder:</strong> AI-generated grades and reports are decision-support outputs, not diagnoses. Review each report with the full clinical context.</div>
@@ -560,7 +559,6 @@ button:disabled{opacity:.55;cursor:not-allowed;transform:none!important;box-shad
             <article class="panel"><div class="panel-title"><h3>Account information</h3></div><small class="muted">Registered email</small><div class="account-value" id="doctorAccountEmail">Not loaded</div><div style="margin-top:13px"><small class="muted">Account type</small><div class="account-value">Doctor</div></div></article>
             <article class="panel"><div class="panel-title"><h3>Access permissions</h3></div><p class="report-text">Your account can view only patients assigned by the system administrator and their clinician-oriented assessment reports. You cannot self-assign patients or change account roles from this portal.</p><span class="sample-tag">Role: Doctor</span></article>
           </div>
-          <div class="safety-note"><strong>Access control:</strong> In the implemented system, the backend checks the current database role and patient assignment for every protected request. Hiding a patient in the interface is not the security boundary.</div>
         </section>
       </main>
     </div>
