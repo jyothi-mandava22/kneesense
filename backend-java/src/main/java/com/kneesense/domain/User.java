@@ -30,6 +30,9 @@ public class User {
     @Column(name = "email", nullable = false, length = 254, unique = true)
     private String email;
 
+    @Column(name = "full_name", length = 120)
+    private String fullName;
+
     @Column(name = "password_hash", nullable = false, length = 255)
     private String passwordHash;
 
@@ -46,8 +49,15 @@ public class User {
         // Required by JPA.
     }
 
+    // Existing constructor retained for admin accounts and existing tests.
     public User(String email, String passwordHash, Role role) {
+        this(email, null, passwordHash, role);
+    }
+
+    // Constructor with full name for new registrations.
+    public User(String email, String fullName, String passwordHash, Role role) {
         this.email = email;
+        this.fullName = fullName;
         this.passwordHash = passwordHash;
         this.role = role;
     }
@@ -62,6 +72,14 @@ public class User {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
     }
 
     public String getPasswordHash() {

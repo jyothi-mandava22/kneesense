@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 public record DoctorAssessmentDetailResponse(
     Long resultId,
     Long patientId,
+    String patientName,
     String patientEmail,
     int klGrade,
     BigDecimal confidence,

@@ -25,10 +25,13 @@ public class AuthService {
 
     @Transactional
     public UserResponse signup(SignupRequest request) {
+        String fullName = request.fullName().trim().replaceAll("\\s+", " ");
         String email = normalizeEmail(request.email());
+
         if (request.password().getBytes(StandardCharsets.UTF_8).length > 72) {
             throw new PasswordTooLongException();
         }
+
         if (userRepository.existsByEmailIgnoreCase(email)) {
             throw new EmailAlreadyRegisteredException();
         }
@@ -36,10 +39,17 @@ public class AuthService {
         // Role is never accepted from the request. Public registration always creates PATIENT.
         User saved = userRepository.save(new User(
             email,
+            fullName,
             passwordEncoder.encode(request.password()),
             Role.PATIENT
         ));
-        return new UserResponse(saved.getId(), saved.getEmail(), saved.getRole());
+
+        return new UserResponse(
+            saved.getId(),
+            saved.getFullName(),
+            saved.getEmail(),
+            saved.getRole()
+        );
     }
 
     public static String normalizeEmail(String email) {

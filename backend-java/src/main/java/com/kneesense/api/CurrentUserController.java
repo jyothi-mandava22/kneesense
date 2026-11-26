@@ -11,6 +11,11 @@ public class CurrentUserController {
 
     @GetMapping("/api/me")
     public UserResponse currentUser(@AuthenticationPrincipal AppUserPrincipal principal) {
-        return new UserResponse(principal.getId(), principal.getUsername(), principal.getRole());
+        return new UserResponse(
+            principal.getId(),
+            principal.getFullName(),
+            principal.getUsername(),
+            principal.getRole()
+        );
     }
 }
