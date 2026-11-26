@@ -87,7 +87,12 @@ public class AuthController {
             .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
-        return ResponseEntity.ok(new UserResponse(principal.getId(), principal.getUsername(), principal.getRole()));
+        return ResponseEntity.ok(new UserResponse(
+            principal.getId(),
+            principal.getFullName(),
+            principal.getUsername(),
+            principal.getRole()
+        ));
     }
 
     @GetMapping("/csrf")

@@ -13,12 +13,14 @@ import java.util.List;
 public final class AppUserPrincipal implements UserDetails {
 
     private final Long id;
+    private final String fullName;
     private final String email;
     private final String passwordHash;
     private final Role role;
 
     public AppUserPrincipal(User user) {
         this.id = user.getId();
+        this.fullName = user.getFullName();
         this.email = user.getEmail();
         this.passwordHash = user.getPasswordHash();
         this.role = user.getRole();
@@ -26,6 +28,10 @@ public final class AppUserPrincipal implements UserDetails {
 
     public Long getId() {
         return id;
+    }
+
+    public String getFullName() {
+        return fullName;
     }
 
     public Role getRole() {

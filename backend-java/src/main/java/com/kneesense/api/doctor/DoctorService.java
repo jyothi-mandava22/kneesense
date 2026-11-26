@@ -73,12 +73,13 @@ public class DoctorService {
     }
 
     private static DoctorPatientResponse toPatientResponse(DoctorPatient assignment) {
-        return new DoctorPatientResponse(
-            assignment.getPatient().getId(),
-            assignment.getPatient().getEmail(),
-            assignment.getAssignedAt()
-        );
-    }
+    return new DoctorPatientResponse(
+        assignment.getPatient().getId(),
+        assignment.getPatient().getFullName(),
+        assignment.getPatient().getEmail(),
+        assignment.getAssignedAt()
+    );
+}
 
     private static DoctorAssessmentHistoryResponse toHistoryResponse(AssessmentResult result) {
         return new DoctorAssessmentHistoryResponse(
@@ -91,15 +92,16 @@ public class DoctorService {
     }
 
     private static DoctorAssessmentDetailResponse toDetailResponse(AssessmentResult result, Report report) {
-        return new DoctorAssessmentDetailResponse(
-            result.getId(),
-            result.getUpload().getUser().getId(),
-            result.getUpload().getUser().getEmail(),
-            result.getKlGrade().intValue(),
-            result.getConfidence(),
-            result.getSource().name().toLowerCase(Locale.ROOT),
-            result.getCreatedAt(),
-            report.getClinicianText()
-        );
-    }
+    return new DoctorAssessmentDetailResponse(
+        result.getId(),
+        result.getUpload().getUser().getId(),
+        result.getUpload().getUser().getFullName(),
+        result.getUpload().getUser().getEmail(),
+        result.getKlGrade().intValue(),
+        result.getConfidence(),
+        result.getSource().name().toLowerCase(Locale.ROOT),
+        result.getCreatedAt(),
+        report.getClinicianText()
+    );
+}
 }

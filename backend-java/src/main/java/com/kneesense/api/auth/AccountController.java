@@ -1,13 +1,19 @@
 package com.kneesense.api.auth;
 
+import com.kneesense.api.auth.dto.UpdateProfileRequest;
+import com.kneesense.api.auth.dto.UserResponse;
+import com.kneesense.domain.User;
 import com.kneesense.security.AppUserPrincipal;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -29,6 +35,24 @@ public class AccountController {
         this.accountService = accountService;
         this.cookieName = cookieName;
         this.cookieSecure = cookieSecure;
+    }
+
+    @PatchMapping
+    public ResponseEntity<UserResponse> updateMyProfile(
+        @AuthenticationPrincipal AppUserPrincipal principal,
+        @Valid @RequestBody UpdateProfileRequest request
+    ) {
+        User updated = accountService.updateFullName(
+            principal.getId(),
+            request.fullName()
+        );
+
+        return ResponseEntity.ok(new UserResponse(
+            updated.getId(),
+            updated.getFullName(),
+            updated.getEmail(),
+            updated.getRole()
+        ));
     }
 
     @DeleteMapping

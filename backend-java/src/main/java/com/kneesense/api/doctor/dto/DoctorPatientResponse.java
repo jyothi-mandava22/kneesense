@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 public record DoctorPatientResponse(
     Long patientId,
+    String patientName,
     String patientEmail,
     LocalDateTime assignedAt
 ) {

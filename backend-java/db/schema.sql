@@ -8,6 +8,7 @@ USE kneesense;
 CREATE TABLE users (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(254) NOT NULL UNIQUE,
+    full_name VARCHAR(120) NULL,
     password_hash VARCHAR(255) NOT NULL,
     role ENUM('PATIENT', 'DOCTOR', 'ADMIN')
         NOT NULL DEFAULT 'PATIENT',

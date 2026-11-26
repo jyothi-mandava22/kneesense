@@ -7,7 +7,17 @@ import jakarta.validation.constraints.Size;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record SignupRequest(
-    @NotBlank @Email @Size(max = 254) String email,
-    @NotBlank @Size(min = 8, max = 72) String password
+    @NotBlank
+    @Size(max = 120)
+    String fullName,
+
+    @NotBlank
+    @Email
+    @Size(max = 254)
+    String email,
+
+    @NotBlank
+    @Size(min = 8, max = 72)
+    String password
 ) {
 }
